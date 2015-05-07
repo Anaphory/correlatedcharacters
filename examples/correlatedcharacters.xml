@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<beast version='2.0'
+	namespace="beast.core:beast.evolution.alignment:correlatedcharacters.polycharacter:beast.evolution.operators:beast.evolution.tree:beast.evolution.datatype:beast.evolution.tree.coalescent:beast.evolution.likelihood:beast.core.util:beast.math.distributions:beast.evolution.sitemodel:beast.evolution.substitutionmodel">
+
+	<map name="prior">beast.math.distributions.Prior</map>
+	<map name="LogNormal">beast.math.distributions.LogNormalDistributionModel</map>
+	<map name="Exponential">beast.math.distributions.Exponential</map>
+
+	<datatype id="binary" spec="StandardData" nrOfStates="2"
+		ambiguities="" />
+
+
+	<datatype id="doublebinary" spec="UserDataType" codelength="2"
+		states="4" codeMap="00=0,01=1,10=2,11=3" />
+
+
+
+	<data id="characters" dataType="user defined" userDataType="@doublebinary">
+		<sequence id="ch_1" taxon="t1" value="0110" />
+		<sequence id="ch_2" taxon="t2" value="0100" />
+	</data>
+
+	<run chainLength="10000" id="mcmc" spec="MCMC">
+		<state id="state" storeEvery="100">
+			<tree id="tree" name="stateNode" />
+
+			<parameter id="rates" name="stateNode">
+				1 1 1 1
+				1 1 1 1
+			</parameter>
+		</state>
+
+		<init estimate="false" id="randomtree" initial="@tree" spec="RandomTree"
+			taxa="@characters">
+			<populationModel id="constantPop" spec="ConstantPopulation">
+				<parameter id="popSize" name="popSize" value="1" />
+			</populationModel>
+		</init>
+
+		<operator id="treeModel000(narrow)" isNarrow="true" spec="Exchange"
+			tree="@tree" weight="1.0" />
+		<operator id="treeModel000(wide)" isNarrow="false" spec="Exchange"
+			tree="@tree" weight="1.0" />
+
+		<distribution id="posterior" spec="CompoundDistribution">
+			<distribution id="prior" spec="CompoundDistribution">
+				<prior id="ratesPrior" name="distribution" x="@rates">
+					<Exponential id="lognormalrate" name="distr">
+						<parameter estimate="false" id="r0" name="mean" value="1" />
+					</Exponential>
+				</prior>
+			</distribution>
+			<distribution id="likelihood" spec="CompoundDistribution">
+				<distribution spec="TreeLikelihood" tree="@tree" data="@characters">
+					<siteModel id="sitemodel" spec="SiteModel">
+						<!-- Does not work (“At sample 0 Likelihood incorrectly calculated”): -->
+						<substModel id="subst" spec="CorrelatedSubstitutionModel"
+							rates="@rates" shape="2 2">
+						<!-- Works: <substModel id="subst" spec="GeneralSubstitutionModel" 
+							rates="@rates"> -->
+							<frequencies name="frequencies" id="frequencies"
+								spec="Frequencies" estimate="false" frequencies="0.25 0.25 0.25 0.25" />
+						</substModel>
+					</siteModel>
+				</distribution>
+			</distribution>
+		</distribution>
+
+		<logger id="screenlog" logEvery="1000">
+			<log idref="rates" />
+		</logger>
+
+		<logger id="treelog" fileName="test.trees">
+			<log idref="tree" />
+		</logger>
+	</run>
+</beast>
