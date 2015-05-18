@@ -24,9 +24,11 @@ import beast.core.Input.Validate;
 import beast.core.parameter.IntegerParameter;
 import beast.evolution.substitutionmodel.GeneralSubstitutionModel;
 
-@Description("Specifies transition probability matrix with restrictions on the rates such that "
-		+ "one of the is equal to one and the others are specified relative to "
-		+ "this unit rate. Works for any number of states.")
+@Description("Specifies transition probability matrix for a collection of multiple characters."
+		+ " At every infinitesimal time step, only one component can change values, so some transition rates are 0, the others arbitrary"
+		+ " with restrictions on the rates such that"
+		+ " one of the is equal to one and the others are specified relative to"
+		+ " this unit rate. Works for any number of states.")
 public class CorrelatedSubstitutionModel extends GeneralSubstitutionModel {
 	public Input<IntegerParameter> shapeInput = new Input<IntegerParameter>(
 			"shape", "component parameter dimensions", Validate.REQUIRED);
@@ -68,7 +70,6 @@ public class CorrelatedSubstitutionModel extends GeneralSubstitutionModel {
 	/**
 	 * sets up rate matrix *
 	 */
-	@Override
 	protected void setupRateMatrix() {
 		double[] fFreqs = frequencies.getFreqs();
 
@@ -123,5 +124,5 @@ public class CorrelatedSubstitutionModel extends GeneralSubstitutionModel {
 		}
 
 	} // setupRateMatrix
-
+	
 } // class GeneralSubstitutionModel

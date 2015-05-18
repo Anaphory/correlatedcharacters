@@ -8,23 +8,25 @@
 
 	<datatype id="binary" spec="StandardData" nrOfStates="2"
 		ambiguities="" />
-
-
 	<datatype id="doublebinary" spec="UserDataType" codelength="2"
 		states="4" codeMap="00=0,01=1,10=2,11=3" />
 
-
-
-	<data id="characters" dataType="user defined" userDataType="@doublebinary">
-		<sequence id="ch_1" taxon="t1" value="0110" />
-		<sequence id="ch_2" taxon="t2" value="0100" />
+	<data id="characters" dataType="user defined" userDataType="@binary">
+		<sequence id="ch_1" taxon="t1" value="0110000010" />
+		<sequence id="ch_2" taxon="t2" value="0100001000" />
+		<sequence id="ch_3" taxon="t3" value="0100100001" />
 	</data>
+
+	<alignment spec="FilteredAlignment" id="filter"
+	    filter="1-4" data="@characters" userDataType="@doublebinary">
+	</alignment>
 
 	<run chainLength="10000" id="mcmc" spec="MCMC">
 		<state id="state" storeEvery="100">
 			<tree id="tree" name="stateNode" />
 
 			<parameter id="rates" name="stateNode">
+				1 1 1 1
 				1 1 1 1
 				1 1 1 1
 			</parameter>
@@ -36,7 +38,7 @@
 				<parameter id="popSize" name="popSize" value="1" />
 			</populationModel>
 		</init>
-
+		
 		<operator id="treeModel000(narrow)" isNarrow="true" spec="Exchange"
 			tree="@tree" weight="1.0" />
 		<operator id="treeModel000(wide)" isNarrow="false" spec="Exchange"
@@ -51,13 +53,11 @@
 				</prior>
 			</distribution>
 			<distribution id="likelihood" spec="CompoundDistribution">
-				<distribution spec="TreeLikelihood" tree="@tree" data="@characters">
+				<distribution id="treelk" spec="TreeLikelihood" tree="@tree" data="@filter">
 					<siteModel id="sitemodel" spec="SiteModel">
-						<!-- Does not work (“At sample 0 Likelihood incorrectly calculated”): -->
+						<!-- Works with shape "4", does not work with shape "2 2" -->
 						<substModel id="subst" spec="CorrelatedSubstitutionModel"
-							rates="@rates" shape="2 2">
-						<!-- Works: <substModel id="subst" spec="GeneralSubstitutionModel" 
-							rates="@rates"> -->
+							rates="@rates" shape="4"> 
 							<frequencies name="frequencies" id="frequencies"
 								spec="Frequencies" estimate="false" frequencies="0.25 0.25 0.25 0.25" />
 						</substModel>
