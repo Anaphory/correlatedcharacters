@@ -24,6 +24,7 @@ import java.util.List;
 import beast.core.BEASTObject;
 import beast.core.Description;
 import beast.core.Input;
+import beast.core.Input.Validate;
 import beast.evolution.datatype.DataType;
 
 /**
@@ -33,12 +34,13 @@ import beast.evolution.datatype.DataType;
 @Description("Compound datatype. Represents tuples of values from other data types.")
 public class CompoundDataType extends BEASTObject implements DataType {
 	public Input<List<DataType>> componentsInput = new Input<List<DataType>>(
-			"components", "Component data types for this compound");
+			"components", "Component data types for this compound", new ArrayList<DataType>(), Validate.REQUIRED);
 
 	protected List<DataType> components;
 	protected List<Integer> stateCounts;
 	protected int stateCount = 1;
 
+	@Override
 	public void initAndValidate() throws Exception {
 		components = componentsInput.get();
 		stateCounts = new ArrayList<Integer>(components.size());

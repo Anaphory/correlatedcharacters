@@ -4,15 +4,17 @@
 package correlatedcharacters.polycharacter;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
+import beast.evolution.alignment.Alignment;
+import beast.evolution.alignment.Sequence;
 import beast.core.Description;
 import beast.core.Input;
 import beast.core.Input.Validate;
 import beast.core.util.Log;
-import beast.evolution.alignment.Alignment;
-import beast.evolution.alignment.Sequence;
 import beast.evolution.datatype.DataType;
+import beast.evolution.datatype.Nucleotide;
 import beast.evolution.datatype.StandardData;
 
 /**
@@ -30,37 +32,37 @@ public class CompoundAlignment extends Alignment {
 	// stripInvariantSitesInput
 	// siteWeightsInput
 	public Input<List<Alignment>> alignmentsInput = new Input<List<Alignment>>(
-			"alignments", "The component alignments", new ArrayList<Alignment>(), Validate.OPTIONAL);
+			"alignments", "The component alignments",
+			new ArrayList<Alignment>(), Validate.OPTIONAL);
 	protected List<Alignment> alignments;
 
 	@Override
 	public void initAndValidate() throws Exception {
 		alignments = alignmentsInput.get();
-		
+
 		if (dataTypeInput.get() == NUCLEOTIDE) {
 			// dataTypeInput has not been set, and therefore has the default
 			// value: Construct new data type
-			CompoundDataType compoundDataType = new CompoundDataType();
-			List<DataType> componentDataTypes = new ArrayList<DataType>(alignments.size());
+			List<DataType> componentDataTypes = new ArrayList<DataType>(
+					alignments.size());
 			for (Alignment alignment : alignments) {
 				componentDataTypes.add(alignment.getDataType());
 			}
-			//TODO: AAAAAAARG
-			//FIXME!!
-			compoundDataType.initByName("components", componentDataTypes.get(0));
+			CompoundDataType compoundDataType = new CompoundDataType();
+			compoundDataType.initByName("components", componentDataTypes);
 			m_dataType = compoundDataType;
 		}
 
-
 		// Given that we take alignments, we don't need to sort, just to check.
 		taxaNames = alignments.get(0).getTaxaNames();
-		stateCounts = alignments.get(0).getStateCounts();
-		maxStateCount = 1;
 		// counts, the list of sequences, starts at everything in state 0.
+		// stateCounts, the list of stateCount for each sequence, starts being 1
+		// everywhere.
 		for (int i = 0; i < taxaNames.size(); ++i) {
 			ArrayList<Integer> zero = new ArrayList<Integer>();
 			zero.add(0);
 			counts.add(zero);
+			stateCounts.add(1);
 		}
 		for (Alignment alignment : alignments) {
 			List<String> otherNames = alignment.getTaxaNames();
@@ -69,28 +71,41 @@ public class CompoundAlignment extends Alignment {
 						"Taxa do not match between component alignments");
 			} else {
 				for (int j = 0; j < taxaNames.size(); ++j) {
-					if (taxaNames.get(j) != otherNames.get(j)) {
+					if (!taxaNames.get(j).equals(otherNames.get(j))) {
 						throw new Exception(
-								"Taxa do not match between component alignments");
+								"Taxa do not match between component alignments: expected "
+										+ taxaNames.get(j) + ", found "
+										+ otherNames.get(j) + " instead");
 					}
 				}
 			}
 
 			List<Integer> otherStateCounts = alignment.getStateCounts();
-			for (int j : otherStateCounts) {
-				if (j != 1) {
-					throw new Exception(
-							"CompoundAlignment only understands singular characters");
-				}
+			for (int j = 0; j < stateCounts.size(); ++j) {
+				stateCounts
+						.set(j, stateCounts.get(j) * otherStateCounts.get(j));
 			}
 
 			List<List<Integer>> otherCounts = alignment.getCounts();
 			for (int j = 0; j < otherCounts.size(); ++j) {
-				counts.get(j).set(0,
+				counts.get(j).set(
+						0,
 						counts.get(j).get(0)
-						* alignment.getDataType().getStateCount()
-						+ otherCounts.get(j).get(0));
+								* alignment.getDataType().getStateCount()
+								+ otherCounts.get(j).get(0));
 			}
+		}
+
+		maxStateCount = 1;
+		for (int stateCount : stateCounts) {
+			if (stateCount > maxStateCount) {
+				maxStateCount = stateCount;
+			}
+		}
+		if (maxStateCount != m_dataType.getStateCount()) {
+			throw new Exception("Size of data type ("
+					+ m_dataType.getStateCount() + ") and of alignments ("
+					+ maxStateCount + ") do not match");
 		}
 
 		if (siteWeightsInput.get() != null) {
@@ -117,8 +132,5 @@ public class CompoundAlignment extends Alignment {
 
 		calcPatterns();
 		Log.info.println(toString(false));
-	}
-
-	static public void sortByTaxonName(List<Sequence> seqs) {
 	}
 }
