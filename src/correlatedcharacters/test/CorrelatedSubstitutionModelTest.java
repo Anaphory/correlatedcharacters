@@ -17,8 +17,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package correlatedcharacters.polycharacter;
+package correlatedcharacters.test;
 
+import correlatedcharacters.polycharacter.CorrelatedSubstitutionModel;
 import junit.framework.TestCase;
 import beast.core.Description;
 import beast.core.parameter.IntegerParameter;
@@ -30,7 +31,7 @@ import beast.evolution.substitutionmodel.Frequencies;
  *
  */
 @Description("Test CorrelatedSubstitution matrix construction")
-public class CSMTest extends TestCase {
+public class CorrelatedSubstitutionModelTest extends TestCase {
 
 	public class CSMwithPublicMatrix extends CorrelatedSubstitutionModel {
 		public double[][] getMatrix() {
