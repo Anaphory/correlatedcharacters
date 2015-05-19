@@ -18,8 +18,10 @@
  */
 package correlatedcharacters.polycharacter;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import beast.core.BEASTObject;
 import beast.core.Description;
 import beast.core.Input;
 import beast.evolution.datatype.DataType;
@@ -29,73 +31,127 @@ import beast.evolution.datatype.DataType;
  * @since 2015-04-24
  */
 @Description("Compound datatype. Represents tuples of values from other data types.")
-public class CompoundDataType implements DataType {
-	public Input<List<Integer>> components = new Input<List<Integer>>("value", "Component data types for this compound"); 
+public class CompoundDataType extends BEASTObject implements DataType {
+	public Input<List<DataType>> componentsInput = new Input<List<DataType>>(
+			"components", "Component data types for this compound");
 
+	protected List<DataType> components;
+	protected List<Integer> stateCounts;
+	protected int stateCount = 1;
+
+	public void initAndValidate() throws Exception {
+		components = componentsInput.get();
+		stateCounts = new ArrayList<Integer>(components.size());
+		for (DataType t : components) {
+			int size = t.getStateCount();
+			if (size > 0) {
+				stateCount *= size;
+				stateCounts.add(size);
+			} else {
+				throw new Exception("Can only compound finite DataTypes");
+			}
+		}
+	}
+
+	protected int compoundState2componentState(int compoundState, int component) {
+		for (int i=0; i<component; ++i) {
+			compoundState /= stateCounts.get(i);
+		}
+		return compoundState % stateCounts.get(component);
+	}
+	
 	@Override
 	public int getStateCount() {
 		// TODO Auto-generated method stub
-		return 0;
+		return stateCount;
 	}
 
+    /**
+     * Convert a sequence represented by a string into a sequence of integers
+     * representing the state for this data type.
+     * Ambiguous states should be represented by integer numbers higher than getStateCount()
+     * throws exception when parsing error occur *
+     */
 	@Override
 	public List<Integer> string2state(String sSequence) throws Exception {
-		// TODO Auto-generated method stub
-		return null;
+		throw new Exception("CompoundDataType cannot parse strings");
 	}
 
+    /**
+     * Convert an array of states into a sequence represented by a string.
+     * This is the inverse of string2state()
+     * throws exception when State cannot be mapped *
+     */
 	@Override
 	public String state2string(List<Integer> nStates) throws Exception {
-		// TODO Auto-generated method stub
-		return null;
+		throw new Exception("CompoundDataType cannot parse strings");
 	}
 
 	@Override
 	public String state2string(int[] nStates) throws Exception {
-		// TODO Auto-generated method stub
-		return null;
+		throw new Exception("CompoundDataType cannot parse strings");
 	}
 
+    /**
+     * returns an array of length getStateCount() containing the (possibly ambiguous) states
+     * that this state represents.
+     */
 	@Override
 	public boolean[] getStateSet(int iState) {
-		// TODO Auto-generated method stub
-		return null;
+		boolean[] ans = new boolean[getStateCount()];
+		ans[iState] = true;
+		return ans;
 	}
 
+    /**
+     * returns an array with all non-ambiguous states represented by
+     * a state.
+     */
 	@Override
 	public int[] getStatesForCode(int iState) {
-		// TODO Auto-generated method stub
-		return null;
+		return new int[]{iState};
 	}
 
 	@Override
 	public boolean isAmbiguousState(int state) {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
+    /**
+     * true if the class is completely self contained and does not need any
+     * further initialisation. Notable exception: GeneralDataype
+     */
 	@Override
 	public boolean isStandard() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
 	public String getTypeDescription() {
-		// TODO Auto-generated method stub
-		return null;
+		String ans = "Compound of data types";
+		for (DataType t : components) {
+			ans += " <" + t.getTypeDescription() + ">";
+		}
+		return ans;
 	}
 
 	@Override
 	public char getChar(int state) {
-		// TODO Auto-generated method stub
-		return 0;
+        return (char) (state + 'A');
 	}
 
 	@Override
 	public String getCode(int state) {
-		// TODO Auto-generated method stub
-		return null;
+		String ans = "";
+		int i = 0;
+		for (DataType t : components) {
+			ans += t.getCode(compoundState2componentState(state, i));
+			++i;
+			if (i<components.size()) {
+				ans+=",";
+			}
+		}
+		return ans;
 	}
-	
+
 }
