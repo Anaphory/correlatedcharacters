@@ -8,27 +8,32 @@
 
 	<datatype id="binary" spec="StandardData" nrOfStates="2"
 		ambiguities="" />
-	<datatype id="doublebinary" spec="UserDataType" codelength="2"
-		states="4" codeMap="00=0,01=1,10=2,11=3" />
 
-	<data id="characters" dataType="user defined" userDataType="@binary">
-		<sequence id="ch_1" taxon="t1" value="0110000010" />
-		<sequence id="ch_2" taxon="t2" value="0100001000" />
-		<sequence id="ch_3" taxon="t3" value="0100100001" />
+
+	<data id="characters" spec="CompoundAlignment">
+		<alignments id="characters1" dataType="user defined" spec="Alignment"
+			userDataType="@binary">
+			<sequence id="ch_1a" taxon="t1" value="0" />
+			<sequence id="ch_2a" taxon="t2" value="1" />
+			<sequence id="ch_3a" taxon="t3" value="1" />
+		</alignments>
+		<alignments id="characters2" dataType="user defined" spec="Alignment"
+			userDataType="@binary">
+			<sequence id="ch_1b" taxon="t1" value="0" />
+			<sequence id="ch_2b" taxon="t2" value="0" />
+			<sequence id="ch_3b" taxon="t3" value="1" />
+		</alignments>
 	</data>
-
-	<alignment spec="FilteredAlignment" id="filter"
-	    filter="1-4" data="@characters" userDataType="@doublebinary">
-	</alignment>
 
 	<run chainLength="10000" id="mcmc" spec="MCMC">
 		<state id="state" storeEvery="100">
 			<tree id="tree" name="stateNode" />
 
 			<parameter id="rates" name="stateNode">
-				1 1 1 1
-				1 1 1 1
-				1 1 1 1
+				1 1
+				1 1
+				1 1
+				1 1
 			</parameter>
 		</state>
 
@@ -38,7 +43,7 @@
 				<parameter id="popSize" name="popSize" value="1" />
 			</populationModel>
 		</init>
-		
+
 		<operator id="treeModel000(narrow)" isNarrow="true" spec="Exchange"
 			tree="@tree" weight="1.0" />
 		<operator id="treeModel000(wide)" isNarrow="false" spec="Exchange"
@@ -53,11 +58,11 @@
 				</prior>
 			</distribution>
 			<distribution id="likelihood" spec="CompoundDistribution">
-				<distribution id="treelk" spec="TreeLikelihood" tree="@tree" data="@filter">
+				<distribution id="treelk" spec="TreeLikelihood" tree="@tree"
+					data="@characters">
 					<siteModel id="sitemodel" spec="SiteModel">
-						<!-- Works with shape "4", does not work with shape "2 2" -->
 						<substModel id="subst" spec="CorrelatedSubstitutionModel"
-							rates="@rates" shape="4"> 
+							rates="@rates" shape="2 2">
 							<frequencies name="frequencies" id="frequencies"
 								spec="Frequencies" estimate="false" frequencies="0.25 0.25 0.25 0.25" />
 						</substModel>
