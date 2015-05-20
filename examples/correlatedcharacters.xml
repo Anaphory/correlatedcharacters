@@ -25,7 +25,7 @@
 		</alignments>
 	</data>
 
-	<run chainLength="10000" id="mcmc" spec="MCMC">
+	<run chainLength="200" id="mcmc" spec="MCMC" preBurnin="0">
 		<state id="state" storeEvery="100">
 			<tree id="tree" name="stateNode" />
 
@@ -37,17 +37,12 @@
 			</parameter>
 		</state>
 
-		<init estimate="false" id="randomtree" initial="@tree" spec="RandomTree"
-			taxa="@characters">
-			<populationModel id="constantPop" spec="ConstantPopulation">
-				<parameter id="popSize" name="popSize" value="1" />
-			</populationModel>
+		<init id="treeinit" initial="@tree" spec="beast.util.TreeParser"
+			IsLabelledNewick="true" newick="(t3:2,(t1:1,t2:1):1);" taxa="@characters">
 		</init>
 
-		<operator id="treeModel000(narrow)" isNarrow="true" spec="Exchange"
-			tree="@tree" weight="1.0" />
-		<operator id="treeModel000(wide)" isNarrow="false" spec="Exchange"
-			tree="@tree" weight="1.0" />
+		<operator id="treeModel000(narrow)" spec="ScaleOperator"
+			parameter="@rates" weight="1" />
 
 		<distribution id="posterior" spec="CompoundDistribution">
 			<distribution id="prior" spec="CompoundDistribution">
@@ -71,7 +66,10 @@
 			</distribution>
 		</distribution>
 
-		<logger id="screenlog" logEvery="1000">
+		<logger id="screenlog" logEvery="1">
+			<plate var="n" range="posterior,prior,ratesPrior,likelihood,treelk">
+				<log idref="$(n)" />
+			</plate>
 			<log idref="rates" />
 		</logger>
 
