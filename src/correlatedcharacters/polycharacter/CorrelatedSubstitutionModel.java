@@ -71,6 +71,9 @@ public class CorrelatedSubstitutionModel extends GeneralSubstitutionModel {
 	 * sets up rate matrix *
 	 */
 	protected void setupRateMatrix() {
+		//Reset the rate matrix to zero. This is important, because DefaultEigenSystem overwrites it, and sets some zero entries to non-zero.
+		rateMatrix = new double[rateMatrix.length][rateMatrix[0].length];
+		
 		double[] fFreqs = frequencies.getFreqs();
 
 		int next = 0;
@@ -107,22 +110,23 @@ public class CorrelatedSubstitutionModel extends GeneralSubstitutionModel {
 		for (int i = 0; i < nrOfStates; i++) {
 			double fSum = 0.0;
 			for (int j = 0; j < nrOfStates; j++) {
-				if (i != j)
+				if (i != j) {
 					fSum += rateMatrix[i][j];
+				}
 			}
 			rateMatrix[i][i] = -fSum;
 		}
 		// normalise rate matrix to one expected substitution per unit time
 		double fSubst = 0.0;
-		for (int i = 0; i < nrOfStates; i++)
+		for (int i = 0; i < nrOfStates; i++) {
 			fSubst += -rateMatrix[i][i] * fFreqs[i];
-
+		}
 		for (int i = 0; i < nrOfStates; i++) {
 			for (int j = 0; j < nrOfStates; j++) {
 				rateMatrix[i][j] = rateMatrix[i][j] / fSubst;
 			}
 		}
-
+		// System.out.println(">" + Arrays.deepToString(rateMatrix));
 	} // setupRateMatrix
-	
+
 } // class GeneralSubstitutionModel
