@@ -9,6 +9,7 @@ import java.util.List;
 
 import beast.evolution.alignment.Alignment;
 import beast.evolution.alignment.Sequence;
+import beast.core.Citation;
 import beast.core.Description;
 import beast.core.Input;
 import beast.core.Input.Validate;
@@ -132,5 +133,9 @@ public class CompoundAlignment extends Alignment {
 
 		calcPatterns();
 		Log.info.println(toString(false));
+	}
+	
+	public List<Alignment> getAlignments() {
+		return alignments;
 	}
 }

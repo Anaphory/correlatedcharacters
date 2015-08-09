@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package correlatedcharacters.test;
+package test.correlatedcharacters;
 
 import correlatedcharacters.polycharacter.CorrelatedSubstitutionModel;
 import junit.framework.TestCase;
@@ -101,5 +101,12 @@ public class CorrelatedSubstitutionModelTest extends TestCase {
 			}
 			assertEquals(i, expectedResult.length);
 		}
+	}
+
+	public void testCSMwithCDT() throws Exception {
+		// Test whether CorrelatedSubstitutionModel plays well with
+		// CompoundDataType, i.e. whether they have the same sort order of
+		// components, endian-ness etc.
+		
 	}
 }

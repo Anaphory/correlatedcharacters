@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import beast.core.BEASTObject;
+import beast.core.Citation;
 import beast.core.Description;
 import beast.core.Input;
 import beast.core.Input.Validate;
@@ -55,11 +56,15 @@ public class CompoundDataType extends BEASTObject implements DataType {
 		}
 	}
 
-	protected int compoundState2componentState(int compoundState, int component) {
-		for (int i=0; i<component; ++i) {
+	public int compoundState2componentState(int compoundState, int component) {
+		for (int i = components.size() - 1; i > component; --i) {
 			compoundState /= stateCounts.get(i);
 		}
 		return compoundState % stateCounts.get(component);
+	}
+	
+	public int getComponentCount() {
+		return components.size();
 	}
 	
 	@Override
