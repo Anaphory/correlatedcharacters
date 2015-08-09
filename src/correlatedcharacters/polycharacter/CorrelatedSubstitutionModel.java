@@ -18,6 +18,7 @@
  */
 package correlatedcharacters.polycharacter;
 
+import beast.core.Citation;
 import beast.core.Description;
 import beast.core.Input;
 import beast.core.Input.Validate;
@@ -29,6 +30,10 @@ import beast.evolution.substitutionmodel.GeneralSubstitutionModel;
 		+ " with restrictions on the rates such that"
 		+ " one of the is equal to one and the others are specified relative to"
 		+ " this unit rate. Works for any number of states.")
+@Citation("Pagel, M., Meade, A., 2006."
+		+ " Bayesian Analysis of Correlated Evolution of Discrete Characters"
+		+ " by Reversible-Jump Markov Chain Monte Carlo."
+		+ " The American Naturalist 167, 808--825. doi:10.1086/503444")
 public class CorrelatedSubstitutionModel extends GeneralSubstitutionModel {
 	public Input<IntegerParameter> shapeInput = new Input<IntegerParameter>(
 			"shape", "component parameter dimensions", Validate.REQUIRED);
