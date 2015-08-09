@@ -55,3 +55,7 @@ docs/_build/
 
 # PyBuilder
 target/
+
+# Beast results, logs and state save files
+*.trees
+*.state
