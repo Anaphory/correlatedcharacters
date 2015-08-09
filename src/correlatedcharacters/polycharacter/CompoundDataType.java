@@ -38,29 +38,35 @@ public class CompoundDataType extends BEASTObject implements DataType {
 			"components", "Component data types for this compound", new ArrayList<DataType>(), Validate.REQUIRED);
 
 	protected List<DataType> components;
-	protected List<Integer> stateCounts;
+	protected Integer[] stateCounts;
 	protected int stateCount = 1;
 
 	@Override
 	public void initAndValidate() throws Exception {
 		components = componentsInput.get();
-		stateCounts = new ArrayList<Integer>(components.size());
+		stateCounts = new Integer[components.size()];
+		int n = 0;
 		for (DataType t : components) {
 			int size = t.getStateCount();
 			if (size > 0) {
 				stateCount *= size;
-				stateCounts.add(size);
+				stateCounts[n] = size;
+				++n;
 			} else {
 				throw new Exception("Can only compound finite DataTypes");
 			}
 		}
 	}
 
-	public int compoundState2componentState(int compoundState, int component) {
-		for (int i = components.size() - 1; i > component; --i) {
-			compoundState /= stateCounts.get(i);
+	static public int compoundState2componentState(Integer[] components, int compoundState, int component) {
+		for (int i = components.length - 1; i > component; --i) {
+			compoundState /= components[i];
 		}
-		return compoundState % stateCounts.get(component);
+		return compoundState % components[component];
+	}
+	
+	public int compoundState2componentState(int compoundState, int component) {
+		return compoundState2componentState(stateCounts, compoundState, component);
 	}
 	
 	public int getComponentCount() {

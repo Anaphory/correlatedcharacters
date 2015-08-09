@@ -41,8 +41,8 @@
 			IsLabelledNewick="true" newick="(t3:2,(t1:1,t2:1):1);" taxa="@characters">
 		</init>
 
-		<operator id="treeModel000(narrow)" spec="ScaleOperator"
-			parameter="@rates" weight="1" />
+		<!--  This operator does nothing, because it scales "1"s by "1". -->
+		<operator id="treeModel000(narrow)" spec="ScaleOperator" parameter="@rates" weight="1" />
 
 		<distribution id="posterior" spec="CompoundDistribution">
 			<distribution id="prior" spec="CompoundDistribution">

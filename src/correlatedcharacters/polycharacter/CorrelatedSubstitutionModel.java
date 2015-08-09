@@ -37,17 +37,22 @@ import beast.evolution.substitutionmodel.GeneralSubstitutionModel;
 public class CorrelatedSubstitutionModel extends GeneralSubstitutionModel {
 	public Input<IntegerParameter> shapeInput = new Input<IntegerParameter>(
 			"shape", "component parameter dimensions", Validate.REQUIRED);
-
+	// TODO: XOR an alignment, XOR a CompoundDataType
+	
+	protected Integer[] shape;
+	
 	@Override
 	public void initAndValidate() throws Exception {
 		frequencies = frequenciesInput.get();
 
+		shape = shapeInput.get().getValues();
+		
 		updateMatrix = true;
 		nrOfStates = 1;
 		int nonzeroTransitions = 0;
-		for (int shape : shapeInput.get().getValues()) {
-			nrOfStates *= shape;
-			nonzeroTransitions += shape - 1;
+		for (int size : shape) {
+			nrOfStates *= size;
+			nonzeroTransitions += size - 1;
 		}
 
 		if (nrOfStates != frequencies.getFreqs().length) {
@@ -83,44 +88,48 @@ public class CorrelatedSubstitutionModel extends GeneralSubstitutionModel {
 
 		int next = 0;
 
-		for (int i = 0; i < nrOfStates; i++) {
-			rateMatrix[i][i] = 0;
-
-			int componentStep = 1;
-
-			for (int component = 0; component < shapeInput.get().getDimension(); ++component) {
-				int componentRange = shapeInput.get().getNativeValue(component);
-				int valueInThisComponent = (i / componentStep) % componentRange;
-
-				int j = i - componentStep * valueInThisComponent;
-				for (int counter = 0; counter < componentRange; ++counter) {
-					if (counter != valueInThisComponent) {
-						rateMatrix[i][j + counter * componentStep] = relativeRates[next];
+		for (int k = 0; k < rateMatrix.length; ++k) {
+			double rowsum = 0.;
+			for (int l = 0; l < rateMatrix[k].length; ++l) {
+				if (k != l) {
+					// Ascertain that the components corresponding to `k`
+					// and `l` differ in precisely one component.
+					int hammingDistance = 0; 
+					for (int component=0; component<shape.length; ++component) {
+						if (CompoundDataType.compoundState2componentState(shape, k, component) !=
+								CompoundDataType.compoundState2componentState(shape, l, component)) {
+							++hammingDistance;
+						}
+					}
+					if (hammingDistance == 1) {
+						rateMatrix[k][l] = ratesInput.get().getArrayValue(next);
+						rowsum += rateMatrix[k][l];
 						++next;
 					}
+						
 				}
-				componentStep *= componentRange;
 			}
 		}
 
 		// bring in frequencies
 		for (int i = 0; i < nrOfStates; i++) {
-			for (int j = i + 1; j < nrOfStates; j++) {
+			for (int j = i+1; j < nrOfStates; j++) {
 				rateMatrix[i][j] *= fFreqs[j];
 				rateMatrix[j][i] *= fFreqs[i];
 			}
 		}
-
-		// set up diagonal
+		
+		// set the diagonal
 		for (int i = 0; i < nrOfStates; i++) {
-			double fSum = 0.0;
+			double rowsum = 0;
 			for (int j = 0; j < nrOfStates; j++) {
-				if (i != j) {
-					fSum += rateMatrix[i][j];
+				if (j != i) {
+					rowsum += rateMatrix[i][j] ;					
 				}
 			}
-			rateMatrix[i][i] = -fSum;
+			rateMatrix[i][i] = -rowsum;
 		}
+
 		// normalise rate matrix to one expected substitution per unit time
 		double fSubst = 0.0;
 		for (int i = 0; i < nrOfStates; i++) {
