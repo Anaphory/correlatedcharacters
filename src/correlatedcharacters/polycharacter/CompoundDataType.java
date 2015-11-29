@@ -58,11 +58,23 @@ public class CompoundDataType extends BEASTObject implements DataType {
 		}
 	}
 
+	static public int[] compoundState2componentStates(Integer[] components, int compoundState) {
+		int[] result = new int[components.length];
+		for (int i = components.length - 1; i >= 0; --i) {
+			result[i] = compoundState % components[i];
+			compoundState /= components[i];
+		}
+		return result;
+	}
+
 	static public int compoundState2componentState(Integer[] components, int compoundState, int component) {
+		/* // Old Implementation:
 		for (int i = components.length - 1; i > component; --i) {
 			compoundState /= components[i];
 		}
 		return compoundState % components[component];
+		*/
+		return compoundState2componentStates(components, compoundState)[component];
 	}
 
 	public int compoundState2componentState(int compoundState, int component) {
