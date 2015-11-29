@@ -47,5 +47,40 @@ public class CompoundDataTypeTest extends TestCase {
 			}
 		}
 	}
-
+	
+	public void testDecompositionCompoundDataType() throws Exception {
+		CompoundDataType compound = null;
+		compound = new CompoundDataType();
+		DataType d0 = datatype0();
+		DataType d1 = datatype1();
+		compound.initByName("components", d0, "components", d1);
+		int counter = 0;
+		for (int i=0; i<d0.getStateCount(); ++i) {
+			for (int j=0; j<d1.getStateCount(); ++j) {
+				assertEquals(counter,
+						compound.componentState2compoundState(new int[] {i, j}));
+				++counter;
+			}
+		}		
+	}
+	
+	public void testRecompositionCompoundDataType() throws Exception {
+		CompoundDataType compound = null;
+		compound = new CompoundDataType();
+		DataType d0 = datatype0();
+		DataType d1 = datatype1();
+		compound.initByName("components", d0, "components", d1);
+		for (int i=0; i<d0.getStateCount(); ++i) {
+			for (int j=0; j<d1.getStateCount(); ++j) {
+				assertEquals(i,
+						compound.compoundState2componentState(
+								compound.componentState2compoundState(new int[] {i, j}),
+								0));
+				assertEquals(j,
+						compound.compoundState2componentState(
+								compound.componentState2compoundState(new int[] {i, j}),
+								1));
+			}
+		}		
+	}
 }

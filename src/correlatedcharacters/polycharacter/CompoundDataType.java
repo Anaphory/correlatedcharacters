@@ -34,8 +34,8 @@ import beast.evolution.datatype.DataType;
  */
 @Description("Compound datatype. Represents tuples of values from other data types.")
 public class CompoundDataType extends BEASTObject implements DataType {
-	public Input<List<DataType>> componentsInput = new Input<List<DataType>>(
-			"components", "Component data types for this compound", new ArrayList<DataType>(), Validate.REQUIRED);
+	public Input<List<DataType>> componentsInput = new Input<List<DataType>>("components",
+			"Component data types for this compound", new ArrayList<DataType>(), Validate.REQUIRED);
 
 	protected List<DataType> components;
 	protected Integer[] stateCounts;
@@ -64,37 +64,50 @@ public class CompoundDataType extends BEASTObject implements DataType {
 		}
 		return compoundState % components[component];
 	}
-	
+
 	public int compoundState2componentState(int compoundState, int component) {
 		return compoundState2componentState(stateCounts, compoundState, component);
 	}
-	
+
+	static public int componentState2compoundState(Integer[] components, int[] componentStates) {
+		int compoundState = 0;
+		for (int i = 0; i < components.length; ++i) {
+			compoundState *= components[i];
+			compoundState += componentStates[i];
+		}
+		return compoundState;
+	}
+
+	public int componentState2compoundState(int[] componentStates) {
+		return componentState2compoundState(stateCounts, componentStates);
+	}
+
 	public int getComponentCount() {
 		return components.size();
 	}
-	
+
 	@Override
 	public int getStateCount() {
 		// TODO Auto-generated method stub
 		return stateCount;
 	}
 
-    /**
-     * Convert a sequence represented by a string into a sequence of integers
-     * representing the state for this data type.
-     * Ambiguous states should be represented by integer numbers higher than getStateCount()
-     * throws exception when parsing error occur *
-     */
+	/**
+	 * Convert a sequence represented by a string into a sequence of integers
+	 * representing the state for this data type. Ambiguous states should be
+	 * represented by integer numbers higher than getStateCount() throws
+	 * exception when parsing error occur *
+	 */
 	@Override
 	public List<Integer> string2state(String sSequence) throws Exception {
 		throw new Exception("CompoundDataType cannot parse strings");
 	}
 
-    /**
-     * Convert an array of states into a sequence represented by a string.
-     * This is the inverse of string2state()
-     * throws exception when State cannot be mapped *
-     */
+	/**
+	 * Convert an array of states into a sequence represented by a string. This
+	 * is the inverse of string2state() throws exception when State cannot be
+	 * mapped *
+	 */
 	@Override
 	public String state2string(List<Integer> nStates) throws Exception {
 		throw new Exception("CompoundDataType cannot parse strings");
@@ -105,10 +118,10 @@ public class CompoundDataType extends BEASTObject implements DataType {
 		throw new Exception("CompoundDataType cannot parse strings");
 	}
 
-    /**
-     * returns an array of length getStateCount() containing the (possibly ambiguous) states
-     * that this state represents.
-     */
+	/**
+	 * returns an array of length getStateCount() containing the (possibly
+	 * ambiguous) states that this state represents.
+	 */
 	@Override
 	public boolean[] getStateSet(int iState) {
 		boolean[] ans = new boolean[getStateCount()];
@@ -116,13 +129,12 @@ public class CompoundDataType extends BEASTObject implements DataType {
 		return ans;
 	}
 
-    /**
-     * returns an array with all non-ambiguous states represented by
-     * a state.
-     */
+	/**
+	 * returns an array with all non-ambiguous states represented by a state.
+	 */
 	@Override
 	public int[] getStatesForCode(int iState) {
-		return new int[]{iState};
+		return new int[] { iState };
 	}
 
 	@Override
@@ -130,10 +142,10 @@ public class CompoundDataType extends BEASTObject implements DataType {
 		return false;
 	}
 
-    /**
-     * true if the class is completely self contained and does not need any
-     * further initialisation. Notable exception: GeneralDataype
-     */
+	/**
+	 * true if the class is completely self contained and does not need any
+	 * further initialisation. Notable exception: GeneralDataype
+	 */
 	@Override
 	public boolean isStandard() {
 		return false;
@@ -150,7 +162,7 @@ public class CompoundDataType extends BEASTObject implements DataType {
 
 	@Override
 	public char getChar(int state) {
-        return (char) (state + 'A');
+		return (char) (state + 'A');
 	}
 
 	@Override
@@ -160,8 +172,8 @@ public class CompoundDataType extends BEASTObject implements DataType {
 		for (DataType t : components) {
 			ans += t.getCode(compoundState2componentState(state, i));
 			++i;
-			if (i<components.size()) {
-				ans+=",";
+			if (i < components.size()) {
+				ans += ",";
 			}
 		}
 		return ans;

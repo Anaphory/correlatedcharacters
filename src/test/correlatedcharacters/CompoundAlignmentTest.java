@@ -36,14 +36,14 @@ public class CompoundAlignmentTest extends TestCase {
 	}
 
 	static public Alignment alignment2() throws Exception {
-		Sequence one = new Sequence("0", "0");
-		Sequence two = new Sequence("1", "1");
-		Sequence three = new Sequence("2", "2");
-		Sequence four = new Sequence("3", "1");
+		Sequence one = new Sequence("0", "Y");
+		Sequence two = new Sequence("1", "Z");
+		Sequence three = new Sequence("2", "X");
+		Sequence four = new Sequence("3", "Y");
 
 		UserDataType ternary = new UserDataType();
 		ternary.initByName("states", 3, "codelength", 1, "codeMap",
-				"0=0, 1=1, 2=2");
+				"X=0, Y=1, Z=2");
 		Alignment data = new Alignment();
 		data.initByName("sequence", one, "sequence", two, "sequence", three,
 				"sequence", four, "userDataType", ternary);
