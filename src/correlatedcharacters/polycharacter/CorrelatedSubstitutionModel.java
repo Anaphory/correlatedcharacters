@@ -90,7 +90,6 @@ public class CorrelatedSubstitutionModel extends GeneralSubstitutionModel {
 		double[] fFreqs = frequencies.getFreqs();
 
 		int next = 0;
-
 		for (int k = 0; k < rateMatrix.length; ++k) {
 			int[] kAsComponentIndices = CompoundDataType.compoundState2componentStates(shape, k);
 			for (int c = 0; c < shape.length; ++c) {
@@ -145,7 +144,7 @@ public class CorrelatedSubstitutionModel extends GeneralSubstitutionModel {
 		// TODO: Currently, this gives the more generic result (“is dependent
 		// on”) when `frequencies` are not all equal, but compatible with
 		// independent evolution, and the base rates make up for the difference
-		// in actual rates introduced by fixing frequencies..
+		// in actual rates introduced by fixing frequencies.
 		double[] fFreqs = frequencies.getFreqs();
 		double freq0 = fFreqs[0];
 		for (double freq : fFreqs) {
@@ -154,27 +153,37 @@ public class CorrelatedSubstitutionModel extends GeneralSubstitutionModel {
 			}
 		}
 
-		int dependsOnStep = 1;
+		Function rates = ratesInput.get();
+
 		int componentMax = 0;
 		int componentMin = 0;
+		int dependsOnStep = nrOfStates;
 		for (int c = 0; c <= component || c <= dependsOn; ++c) {
 			if (c <= component) {
 				componentMin = componentMax;
 				componentMax += shape[c] - 1;
 			}
 			if (c <= dependsOn) {
-				dependsOnStep *= shape[c];
+				dependsOnStep /= shape[c];
 			}
 		}
 
-		Function rates = ratesInput.get();
-
+		boolean[] checked = new boolean[nrOfStates];
 		for (int from = 0; from < nrOfStates; ++from) {
-			for (int componentTo = componentMin; componentTo < componentMax; ++componentTo) {
-				double thisRate = rates.getArrayValue(from * nonzeroTransitions + componentTo);
-				double nextRate = rates.getArrayValue(((from + dependsOnStep) % nrOfStates) * nonzeroTransitions + componentTo);
-				if (thisRate != nextRate) {
-					return true;
+			if (!checked[from]) {
+				checked[from] = true;
+				for (int componentTo = componentMin; componentTo < componentMax; ++componentTo) {
+					double thisRate = rates.getArrayValue(from * nonzeroTransitions + componentTo);
+					for (int other = 1; other < shape[dependsOn]; ++other) {
+						int otherIndex = from + dependsOnStep * other;
+						checked[otherIndex] = true;
+						System.out.printf("> %d ?= %d\n", from, otherIndex);
+						double otherRate = rates.getArrayValue(otherIndex * nonzeroTransitions + componentTo);
+						if (thisRate != otherRate) {
+							System.out.printf("  No: %f vs. %f\n", thisRate, otherRate);
+							return true;
+						}
+					}
 				}
 			}
 		}
