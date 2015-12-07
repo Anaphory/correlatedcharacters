@@ -78,6 +78,9 @@ public class CorrelatedSubstitutionModel extends GeneralSubstitutionModel {
 		storedRelativeRates = new double[ratesInput.get().getDimension()];
 	} // initAndValidate
 
+	public Integer[] getShape() {
+		return shape.clone();
+	}
 	/**
 	 * sets up rate matrix *
 	 */
