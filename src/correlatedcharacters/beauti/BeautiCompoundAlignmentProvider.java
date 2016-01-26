@@ -19,6 +19,8 @@ import beast.core.Description;
 import beast.core.Input;
 import beast.evolution.alignment.Alignment;
 import beast.evolution.alignment.FilteredAlignment;
+import beast.evolution.datatype.DataType;
+import beast.evolution.datatype.StandardData;
 import beast.util.NexusParser;
 import correlatedcharacters.polycharacter.CompoundAlignment;
 
@@ -71,8 +73,9 @@ public class BeautiCompoundAlignmentProvider extends BeautiAlignmentProvider {
 				for (Alignment alignment : doc.alignments) {
 					if (cloneOriginal == alignment.getID()) {
 						List<BEASTInterface> newAlignments = new ArrayList<BEASTInterface>();
-						newAlignments.add(alignment);
-						return newAlignments;
+						throw new RuntimeException("this is not implemented yet."); 
+						//newAlignments.add(alignment); //FIXME: CLONE! DON'T RE-USE!
+						//return newAlignments;
 					}
 				}
 				throw new RuntimeException();
@@ -89,6 +92,7 @@ public class BeautiCompoundAlignmentProvider extends BeautiAlignmentProvider {
 		List<BEASTInterface> partitions = new ArrayList<BEASTInterface>(1);
 		// We shall read each file and get all individual sites from them.
 		List<Alignment> componentAlignments = new ArrayList<Alignment>(files.length);
+		List<DataType> componentDatatypes = new ArrayList<DataType>(files.length);
 		for (File file : files) {
 			String fileName = file.getName();
 			if (fileName.toLowerCase().endsWith(".nex") || fileName.toLowerCase().endsWith(".nxs")
@@ -99,9 +103,17 @@ public class BeautiCompoundAlignmentProvider extends BeautiAlignmentProvider {
 					if (parser.m_alignment.getSiteCount() < 1) {
 						throw new IllegalArgumentException("Nexus file aligmnent was empty");
 					}
+					// Add each site as a separate alignment.
 					for (int i = parser.m_alignment.getSiteCount(); i > 0; --i) {
 						FilteredAlignment site = new FilteredAlignment();
-						site.initByName("data", parser.m_alignment, "filter", String.valueOf(i));
+						site.initByName(
+								"id", parser.m_alignment.getID()+"_"+String.valueOf(i),
+								"data", parser.m_alignment,
+								"filter", String.valueOf(i),
+								"dataType", parser.m_alignment.dataTypeInput.get(),
+								"userDataType", parser.m_alignment.userDataTypeInput.get());
+						site.setID(parser.m_alignment.getID()+"_"+String.valueOf(i));
+						System.out.printf("%s\n", site.toString());
 						componentAlignments.add(site);
 					}
 				} catch (Exception ex) {
@@ -110,9 +122,14 @@ public class BeautiCompoundAlignmentProvider extends BeautiAlignmentProvider {
 					return null;
 				}
 			}
-			CompoundAlignment compoundAlignment = new CompoundAlignment(componentAlignments);
-			partitions.add(compoundAlignment);
 		}
+		// FIXME: Here, we would like a dialogue showing the possible components, for selection.
+		
+		// Build a compound alignment from the selected components, and return it.
+		CompoundAlignment compoundAlignment = new CompoundAlignment(componentAlignments);
+		compoundAlignment.setID("compound");
+		partitions.add(compoundAlignment);
+		System.out.printf("%s", partitions.get(0).getID());
 		return partitions;
 	}
 
