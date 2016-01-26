@@ -26,6 +26,7 @@ import beast.core.Citation;
 import beast.core.Description;
 import beast.core.Input;
 import beast.core.Input.Validate;
+import beast.evolution.alignment.Alignment;
 import beast.evolution.datatype.DataType;
 
 /**
@@ -40,6 +41,15 @@ public class CompoundDataType extends BEASTObject implements DataType {
 	protected List<DataType> components;
 	protected Integer[] stateCounts;
 	protected int stateCount = 1;
+
+	public CompoundDataType(List<DataType> inputs) {
+		super();
+		initAndValidate(inputs);
+	}
+
+	public CompoundDataType() {
+		super();
+	}
 
 	@Override
 	public void initAndValidate() {
