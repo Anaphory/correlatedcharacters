@@ -32,25 +32,37 @@ public class CompoundAlignment extends Alignment {
 	// Consider inputs:
 	// stripInvariantSitesInput
 	// siteWeightsInput
-	public Input<List<Alignment>> alignmentsInput = new Input<List<Alignment>>(
-			"alignments", "The component alignments",
+	public Input<List<Alignment>> alignmentsInput = new Input<List<Alignment>>("alignments", "The component alignments",
 			new ArrayList<Alignment>(), Validate.OPTIONAL);
 	protected List<Alignment> alignments;
 
-	@Override
-	public void initAndValidate() throws Exception {
-		alignments = alignmentsInput.get();
+	public CompoundAlignment(List<Alignment> inputs) {
+		super();
+		initAndValidate(inputs);
+	}
 
+	public CompoundAlignment() {
+		super();
+	}
+
+	private void initAndValidate(List<Alignment> alments) {
+		alignments = alments;
 		if (dataTypeInput.get() == NUCLEOTIDE) {
 			// dataTypeInput has not been set, and therefore has the default
 			// value: Construct new data type
-			List<DataType> componentDataTypes = new ArrayList<DataType>(
-					alignments.size());
+			List<DataType> componentDataTypes = new ArrayList<DataType>(alignments.size());
 			for (Alignment alignment : alignments) {
 				componentDataTypes.add(alignment.getDataType());
 			}
 			CompoundDataType compoundDataType = new CompoundDataType();
-			compoundDataType.initByName("components", componentDataTypes);
+
+			// FIXME: Once the appropriate methods have been cleaned up, we
+			// don't have to catch and reraise as RuntimeException any more.
+			try {
+				compoundDataType.initByName("components", componentDataTypes);
+			} catch (Exception e) {
+				throw new IllegalArgumentException(e.getMessage());
+			}
 			m_dataType = compoundDataType;
 		}
 
@@ -68,32 +80,25 @@ public class CompoundAlignment extends Alignment {
 		for (Alignment alignment : alignments) {
 			List<String> otherNames = alignment.getTaxaNames();
 			if (otherNames.size() != taxaNames.size()) {
-				throw new Exception(
-						"Taxa do not match between component alignments");
+				throw new RuntimeException("Taxa do not match between component alignments");
 			} else {
 				for (int j = 0; j < taxaNames.size(); ++j) {
 					if (!taxaNames.get(j).equals(otherNames.get(j))) {
-						throw new Exception(
-								"Taxa do not match between component alignments: expected "
-										+ taxaNames.get(j) + ", found "
-										+ otherNames.get(j) + " instead");
+						throw new RuntimeException("Taxa do not match between component alignments: expected "
+								+ taxaNames.get(j) + ", found " + otherNames.get(j) + " instead");
 					}
 				}
 			}
 
 			List<Integer> otherStateCounts = alignment.getStateCounts();
 			for (int j = 0; j < stateCounts.size(); ++j) {
-				stateCounts
-						.set(j, stateCounts.get(j) * otherStateCounts.get(j));
+				stateCounts.set(j, stateCounts.get(j) * otherStateCounts.get(j));
 			}
 
 			List<List<Integer>> otherCounts = alignment.getCounts();
 			for (int j = 0; j < otherCounts.size(); ++j) {
-				counts.get(j).set(
-						0,
-						counts.get(j).get(0)
-								* alignment.getDataType().getStateCount()
-								+ otherCounts.get(j).get(0));
+				counts.get(j).set(0,
+						counts.get(j).get(0) * alignment.getDataType().getStateCount() + otherCounts.get(j).get(0));
 			}
 		}
 
@@ -104,8 +109,7 @@ public class CompoundAlignment extends Alignment {
 			}
 		}
 		if (maxStateCount != m_dataType.getStateCount()) {
-			throw new Exception("Size of data type ("
-					+ m_dataType.getStateCount() + ") and of alignments ("
+			throw new RuntimeException("Size of data type (" + m_dataType.getStateCount() + ") and of alignments ("
 					+ maxStateCount + ") do not match");
 		}
 
@@ -119,22 +123,25 @@ public class CompoundAlignment extends Alignment {
 		if (!(m_dataType instanceof StandardData)) {
 			for (List<Integer> seq : counts) {
 				if (seq.size() != nLength) {
-					throw new Exception(
-							"Two sequences with different length found: "
-									+ nLength + " != " + seq.size());
+					throw new RuntimeException(
+							"Two sequences with different length found: " + nLength + " != " + seq.size());
 				}
 			}
 		}
 		if (siteWeights != null && siteWeights.length != nLength) {
-			throw new RuntimeException("Number of weights ("
-					+ siteWeights.length + ") does not match sequence length ("
-					+ nLength + ")");
+			throw new RuntimeException(
+					"Number of weights (" + siteWeights.length + ") does not match sequence length (" + nLength + ")");
 		}
 
 		calcPatterns();
 		Log.info.println(toString(false));
 	}
-	
+
+	@Override
+	public void initAndValidate() {
+		initAndValidate(alignmentsInput.get());
+	}
+
 	public List<Alignment> getAlignments() {
 		return alignments;
 	}
