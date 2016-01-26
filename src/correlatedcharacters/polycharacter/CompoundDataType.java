@@ -42,8 +42,12 @@ public class CompoundDataType extends BEASTObject implements DataType {
 	protected int stateCount = 1;
 
 	@Override
-	public void initAndValidate() throws Exception {
-		components = componentsInput.get();
+	public void initAndValidate() {
+		initAndValidate(componentsInput.get());
+	}
+	
+	private void initAndValidate(List<DataType> compnents) {
+		components = compnents;
 		stateCounts = new Integer[components.size()];
 		int n = 0;
 		for (DataType t : components) {
@@ -53,7 +57,7 @@ public class CompoundDataType extends BEASTObject implements DataType {
 				stateCounts[n] = size;
 				++n;
 			} else {
-				throw new Exception("Can only compound finite DataTypes");
+				throw new IllegalArgumentException("Can only compound finite DataTypes");
 			}
 		}
 	}
