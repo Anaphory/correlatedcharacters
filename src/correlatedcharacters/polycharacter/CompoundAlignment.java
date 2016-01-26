@@ -80,11 +80,11 @@ public class CompoundAlignment extends Alignment {
 		for (Alignment alignment : alignments) {
 			List<String> otherNames = alignment.getTaxaNames();
 			if (otherNames.size() != taxaNames.size()) {
-				throw new RuntimeException("Taxa do not match between component alignments");
+				throw new IllegalArgumentException("Taxa do not match between component alignments");
 			} else {
 				for (int j = 0; j < taxaNames.size(); ++j) {
 					if (!taxaNames.get(j).equals(otherNames.get(j))) {
-						throw new RuntimeException("Taxa do not match between component alignments: expected "
+						throw new IllegalArgumentException("Taxa do not match between component alignments: expected "
 								+ taxaNames.get(j) + ", found " + otherNames.get(j) + " instead");
 					}
 				}
