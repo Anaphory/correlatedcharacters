@@ -54,7 +54,9 @@ public class CorrelatedSubstitutionModelTest extends TestCase {
 		this.shape = shapeV;
 		this.rates = ratesV;
 		freqs = new Frequencies();
-		freqs.initByName("frequencies", new RealParameter(freqsV), "estimate", false);
+		freqs.initByName(
+				"frequencies", new RealParameter(freqsV),
+				"estimate", false);
 		this.expectedResult = expectedResultV;
 	}
 
@@ -128,7 +130,10 @@ public class CorrelatedSubstitutionModelTest extends TestCase {
 	@Test
 	public void testCSM() throws Exception {
 		CSMwithPublicMatrix csm = new CSMwithPublicMatrix();
-		csm.initByName("rates", new RealParameter(rates), "frequencies", freqs, "shape", new IntegerParameter(shape));
+		csm.initByName(
+				"rates", new RealParameter(rates),
+				"frequencies", freqs,
+				"shape", new IntegerParameter(shape));
 
 		final double[][] result = csm.getMatrix();
 
@@ -155,7 +160,10 @@ public class CorrelatedSubstitutionModelTest extends TestCase {
 			nrOfStates *= d;
 		}
 
-		csm.initByName("rates", new RealParameter(rates), "frequencies", freqs, "shape", new IntegerParameter(shape));
+		csm.initByName(
+				"rates", new RealParameter(rates),
+				"frequencies", freqs,
+				"shape", new IntegerParameter(shape));
 
 		final double[][] result = csm.getMatrix();
 
@@ -236,7 +244,10 @@ public class CorrelatedSubstitutionModelTest extends TestCase {
 
 		// Generate the rates matrix
 		CSMwithPublicMatrix csm = new CSMwithPublicMatrix();
-		csm.initByName("rates", new RealParameter(rates), "frequencies", freqs, "shape", new IntegerParameter(shape));
+		csm.initByName(
+				"rates", new RealParameter(rates),
+				"frequencies", freqs,
+				"shape", new IntegerParameter(shape));
 
 		final double[][] result = csm.getMatrix();
 
