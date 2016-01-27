@@ -21,6 +21,8 @@ package correlatedcharacters.polycharacter;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.fest.swing.util.Arrays;
+
 import beast.core.BEASTObject;
 import beast.core.Citation;
 import beast.core.Description;
@@ -110,6 +112,10 @@ public class CompoundDataType extends BEASTObject implements DataType {
 
 	public int getComponentCount() {
 		return components.size();
+	}
+	
+	public Integer[] getStateCounts() {
+		return Arrays.copyOf(stateCounts);
 	}
 
 	@Override

@@ -13,19 +13,25 @@ import javax.swing.JOptionPane;
 import beast.app.beauti.Beauti;
 import beast.app.beauti.BeautiAlignmentProvider;
 import beast.app.beauti.BeautiDoc;
+import beast.app.beauti.BeautiSubTemplate;
 import beast.app.draw.ExtensionFileFilter;
 import beast.core.BEASTInterface;
 import beast.core.Description;
 import beast.core.Input;
+import beast.core.Input.Validate;
 import beast.evolution.alignment.Alignment;
 import beast.evolution.alignment.FilteredAlignment;
 import beast.evolution.datatype.DataType;
 import beast.evolution.datatype.StandardData;
+import beast.evolution.datatype.UserDataType;
 import beast.util.NexusParser;
 import correlatedcharacters.polycharacter.CompoundAlignment;
 
 @Description("Class for creating a Compound Alignment, which can be used to model correlated evolution of separate Aligment data.")
 public class BeautiCompoundAlignmentProvider extends BeautiAlignmentProvider {
+	public Input<BeautiSubTemplate> sitetemplate = new Input<BeautiSubTemplate>("sitetemplate",
+			"template to be used for creating a new component site.", Validate.REQUIRED);
+
 	@Override
 	protected List<BEASTInterface> getAlignments(BeautiDoc doc) {
 		// First, ask the user whether they want to create a new alignment from
@@ -73,9 +79,10 @@ public class BeautiCompoundAlignmentProvider extends BeautiAlignmentProvider {
 				for (Alignment alignment : doc.alignments) {
 					if (cloneOriginal == alignment.getID()) {
 						List<BEASTInterface> newAlignments = new ArrayList<BEASTInterface>();
-						throw new RuntimeException("this is not implemented yet."); 
-						//newAlignments.add(alignment); //FIXME: CLONE! DON'T RE-USE!
-						//return newAlignments;
+						throw new RuntimeException("this is not implemented yet.");
+						// newAlignments.add(alignment); //FIXME: CLONE! DON'T
+						// RE-USE!
+						// return newAlignments;
 					}
 				}
 				throw new RuntimeException();
@@ -92,7 +99,6 @@ public class BeautiCompoundAlignmentProvider extends BeautiAlignmentProvider {
 		List<BEASTInterface> partitions = new ArrayList<BEASTInterface>(1);
 		// We shall read each file and get all individual sites from them.
 		List<Alignment> componentAlignments = new ArrayList<Alignment>(files.length);
-		List<DataType> componentDatatypes = new ArrayList<DataType>(files.length);
 		for (File file : files) {
 			String fileName = file.getName();
 			if (fileName.toLowerCase().endsWith(".nex") || fileName.toLowerCase().endsWith(".nxs")
@@ -106,15 +112,18 @@ public class BeautiCompoundAlignmentProvider extends BeautiAlignmentProvider {
 					// Add each site as a separate alignment.
 					for (int i = parser.m_alignment.getSiteCount(); i > 0; --i) {
 						FilteredAlignment site = new FilteredAlignment();
-						site.initByName(
-								"id", parser.m_alignment.getID()+"_"+String.valueOf(i),
-								"data", parser.m_alignment,
-								"filter", String.valueOf(i),
-								"dataType", parser.m_alignment.dataTypeInput.get(),
-								"userDataType", parser.m_alignment.userDataTypeInput.get());
-						site.setID(parser.m_alignment.getID()+"_"+String.valueOf(i));
+						site.initByName("id", parser.m_alignment.getID() + "_" + String.valueOf(i), "data",
+								parser.m_alignment, "filter", String.valueOf(i), "dataType",
+								parser.m_alignment.dataTypeInput.get(), "userDataType",
+								parser.m_alignment.userDataTypeInput.get());
+						site.setID(parser.m_alignment.getID() + "_" + String.valueOf(i));
 						System.out.printf("%s\n", site.toString());
+						doc.addPlugin(site);
+						if (site.getDataType() instanceof BEASTInterface) {
+							doc.addPlugin((BEASTInterface) site.getDataType());
+						}
 						componentAlignments.add(site);
+						doc.addAlignmentWithSubnet(site, sitetemplate.get());
 					}
 				} catch (Exception ex) {
 					ex.printStackTrace();
@@ -123,12 +132,25 @@ public class BeautiCompoundAlignmentProvider extends BeautiAlignmentProvider {
 				}
 			}
 		}
-		// FIXME: Here, we would like a dialogue showing the possible components, for selection.
-		
-		// Build a compound alignment from the selected components, and return it.
+		// FIXME: Here, we would like a dialogue showing the possible
+		// components, for selection.
+
+		// Build a compound alignment from the selected components, and return
+		// it.
 		CompoundAlignment compoundAlignment = new CompoundAlignment(componentAlignments);
-		compoundAlignment.setID("compound");
+		// compound alignment needs an ID that does not exist yet.
+		int i = 0;
+		for (int j = 0; j < doc.alignments.size(); ++j) {
+			Alignment alignment = doc.alignments.get(j);
+			if (alignment.getID() == ("compound" + String.valueOf(i))) {
+				++i;
+				j = 0;
+			}
+		}
+		compoundAlignment.setID("compound" + String.valueOf(i));
+		doc.addPlugin(compoundAlignment);
 		partitions.add(compoundAlignment);
+		doc.addAlignmentWithSubnet(compoundAlignment, template.get());
 		System.out.printf("%s", partitions.get(0).getID());
 		return partitions;
 	}

@@ -41,7 +41,11 @@ import beast.evolution.substitutionmodel.GeneralSubstitutionModel;
 public class CorrelatedSubstitutionModel extends GeneralSubstitutionModel {
 	public Input<IntegerParameter> shapeInput = new Input<IntegerParameter>("shape", "component parameter dimensions",
 			Validate.REQUIRED);
-	// TODO: XOR an alignment, XOR a CompoundDataType
+	public Input<CompoundDataType> datatypeInput = new Input<CompoundDataType>("datatype",
+			"corresponding compound data type", Validate.XOR, shapeInput);
+	public Input<CompoundAlignment> alignmentInput = new Input<CompoundAlignment>("alignment",
+			"corresponding alignment to derive parameter dimensions from", Validate.XOR,
+			datatypeInput);
 
 	protected Integer[] shape;
 	protected int nonzeroTransitions = 0;
@@ -50,8 +54,11 @@ public class CorrelatedSubstitutionModel extends GeneralSubstitutionModel {
 	public void initAndValidate() throws Exception {
 		frequencies = frequenciesInput.get();
 
-		shape = shapeInput.get().getValues();
-
+		if (shapeInput.get() == null) {
+			shape = shapeInput.get().getValues();
+		} else {
+			shape = datatypeInput.get().getStateCounts();
+		}
 		updateMatrix = true;
 		nrOfStates = 1;
 		for (int size : shape) {
@@ -81,6 +88,7 @@ public class CorrelatedSubstitutionModel extends GeneralSubstitutionModel {
 	public Integer[] getShape() {
 		return shape.clone();
 	}
+
 	/**
 	 * sets up rate matrix *
 	 */
