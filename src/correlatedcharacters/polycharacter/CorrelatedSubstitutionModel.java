@@ -55,8 +55,6 @@ public class CorrelatedSubstitutionModel extends GeneralSubstitutionModel {
 		frequencies = frequenciesInput.get();
 
 		if (shapeInput.get() == null) {
-			shape = shapeInput.get().getValues();
-		} else {
 			CompoundDataType datatype;
 			if (alignmentInput.get() == null) {
 				datatype = datatypeInput.get();
@@ -64,6 +62,8 @@ public class CorrelatedSubstitutionModel extends GeneralSubstitutionModel {
 				datatype = (CompoundDataType) alignmentInput.get().getDataType();
 			}
 			shape = datatype.getStateCounts();
+		} else {
+			shape = shapeInput.get().getValues();
 		}
 		updateMatrix = true;
 		nrOfStates = 1;
