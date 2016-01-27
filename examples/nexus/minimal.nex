@@ -1,0 +1,40 @@
+#NEXUS
+[!This data set was hand-written
+
+]
+
+BEGIN TAXA;
+        TITLE  combined;
+        DIMENSIONS NTAX=5;
+        TAXLABELS
+            Thing_0
+            Thing_1
+            Thing_2
+            OtherThing
+            Darwin
+            ;
+END;
+
+BEGIN CHARACTERS;
+	TITLE Features;
+	LINK TAXA = combined;
+	DIMENSIONS NCHAR=3;
+	FORMAT DATATYPE=Standard SYMBOLS= "0 1 2 3 4 5 6 7 8 9" MISSING=? GAP= -;
+	CHARSTATELABELS
+		1  Strong / weak. strong.,
+		2  Wide / thin. medium. wide.,
+		3  Tall / tiny small normal large Huge,
+		;
+
+MATRIX
+[                                       10        20  ]
+[                                        .         .  ]
+Thing_0                        000
+Thing_1                        011
+Thing_2                        002
+OtherThing		       123
+Darwin                         124
+;
+
+END;
+
