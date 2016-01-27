@@ -57,7 +57,13 @@ public class CorrelatedSubstitutionModel extends GeneralSubstitutionModel {
 		if (shapeInput.get() == null) {
 			shape = shapeInput.get().getValues();
 		} else {
-			shape = datatypeInput.get().getStateCounts();
+			CompoundDataType datatype;
+			if (alignmentInput.get() == null) {
+				datatype = datatypeInput.get();
+			} else {
+				datatype = (CompoundDataType) alignmentInput.get().getDataType();
+			}
+			shape = datatype.getStateCounts();
 		}
 		updateMatrix = true;
 		nrOfStates = 1;
