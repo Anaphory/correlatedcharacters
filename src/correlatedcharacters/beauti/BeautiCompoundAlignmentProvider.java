@@ -137,7 +137,7 @@ public class BeautiCompoundAlignmentProvider extends BeautiAlignmentProvider {
 
 		// Build a compound alignment from the selected components, and return
 		// it.
-		CompoundAlignment compoundAlignment = new CompoundAlignment(componentAlignments);
+		CompoundAlignment compoundAlignment = new CompoundAlignment(componentAlignments.get(0));
 		// compound alignment needs an ID that does not exist yet.
 		int i = 0;
 		for (int j = 0; j < doc.alignments.size(); ++j) {

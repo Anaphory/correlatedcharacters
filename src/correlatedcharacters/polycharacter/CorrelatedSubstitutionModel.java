@@ -39,13 +39,13 @@ import beast.evolution.substitutionmodel.GeneralSubstitutionModel;
 		+ " by Reversible-Jump Markov Chain Monte Carlo."
 		+ " The American Naturalist 167, 808--825. doi:10.1086/503444")
 public class CorrelatedSubstitutionModel extends GeneralSubstitutionModel {
-	public Input<IntegerParameter> shapeInput = new Input<IntegerParameter>("shape", "component parameter dimensions",
-			Validate.REQUIRED);
+	// FIXME: One of these three Inputs is required, but there is no way to
+	// specify that using Validate.XXX
+	public Input<IntegerParameter> shapeInput = new Input<IntegerParameter>("shape", "component parameter dimensions");
 	public Input<CompoundDataType> datatypeInput = new Input<CompoundDataType>("datatype",
-			"corresponding compound data type", Validate.XOR, shapeInput);
+			"corresponding compound data type");
 	public Input<CompoundAlignment> alignmentInput = new Input<CompoundAlignment>("alignment",
-			"corresponding alignment to derive parameter dimensions from", Validate.XOR,
-			datatypeInput);
+			"corresponding alignment to derive parameter dimensions from");
 
 	protected Integer[] shape;
 	protected int nonzeroTransitions = 0;
@@ -54,10 +54,18 @@ public class CorrelatedSubstitutionModel extends GeneralSubstitutionModel {
 	public void initAndValidate() throws Exception {
 		frequencies = frequenciesInput.get();
 
+		// One of these three Inputs is required, but there is no way to specify
+		// that using Validate.XXX – Therefore we do it manually.
 		if (shapeInput.get() == null) {
 			CompoundDataType datatype;
 			if (alignmentInput.get() == null) {
-				datatype = datatypeInput.get();
+				if (datatypeInput.get() == null) {
+					// FIXME: Construct a ValidateException and use that for
+					// cases like this
+					throw new IllegalArgumentException("One of shape, datatype, alignment must be specified.");
+				} else {
+					datatype = datatypeInput.get();
+				}
 			} else {
 				datatype = (CompoundDataType) alignmentInput.get().getDataType();
 			}
@@ -65,30 +73,42 @@ public class CorrelatedSubstitutionModel extends GeneralSubstitutionModel {
 		} else {
 			shape = shapeInput.get().getValues();
 		}
+
 		updateMatrix = true;
 		nrOfStates = 1;
-		for (int size : shape) {
+		for (
+
+		int size : shape)
+
+		{
 			nrOfStates *= size;
 			nonzeroTransitions += size - 1;
 		}
 
-		if (nrOfStates != frequencies.getFreqs().length) {
+		if (nrOfStates != frequencies.getFreqs().length)
+
+		{
 			throw new Exception("Dimension of input 'frequencies' is " + frequencies.getFreqs().length + " but the "
 					+ "shape input gives a total dimension of " + nrOfStates);
 		}
 
-		if (ratesInput.get().getDimension() != nrOfStates * nonzeroTransitions) {
+		if (ratesInput.get().getDimension() != nrOfStates * nonzeroTransitions)
+
+		{
 			throw new Exception("Dimension of input 'rates' is " + ratesInput.get().getDimension() + " but a "
 					+ "rate matrix of dimension " + nrOfStates + "x" + nonzeroTransitions + "="
 					+ nrOfStates * nonzeroTransitions + " was " + "expected");
 		}
 
-		eigenSystem = createEigenSystem();
+		eigenSystem =
+
+		createEigenSystem();
 		// eigenSystem = new DefaultEigenSystem(m_nStates);
 
 		rateMatrix = new double[nrOfStates][nrOfStates];
 		relativeRates = new double[ratesInput.get().getDimension()];
 		storedRelativeRates = new double[ratesInput.get().getDimension()];
+
 	} // initAndValidate
 
 	public Integer[] getShape() {

@@ -1,68 +1,82 @@
 package test.correlatedcharacters;
 
 import junit.framework.TestCase;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import beast.core.Input;
 import beast.core.Input.Validate;
 import beast.evolution.alignment.Alignment;
+import beast.evolution.alignment.FilteredAlignment;
 import beast.evolution.alignment.Sequence;
+import beast.evolution.datatype.DataType;
+import beast.evolution.datatype.StandardData;
 import beast.evolution.datatype.UserDataType;
 import correlatedcharacters.polycharacter.CompoundAlignment;
 import correlatedcharacters.polycharacter.CompoundDataType;
 
 public class CompoundAlignmentTest extends TestCase {
+	private Alignment[] filtered = new Alignment[4];
 
-	static public Alignment alignment0() throws Exception {
-		Sequence one = new Sequence("0", "T");
-		Sequence two = new Sequence("1", "G");
-		Sequence three = new Sequence("2", "G");
-		Sequence four = new Sequence("3", "T");
+	static public Alignment alignment0() {
+		Sequence zer = new Sequence("zer", "1011");
+		Sequence one = new Sequence("one", "0000");
+		Sequence two = new Sequence("two", "0101");
+		Sequence thr = new Sequence("thr", "0101");
+		Sequence fou = new Sequence("fou", "1001");
 
 		Alignment data = new Alignment();
-		data.initByName("sequence", one, "sequence", two, "sequence", three,
-				"sequence", four, "dataType", "nucleotide");
+		data.initByName("sequence", zer, "sequence", one, "sequence", two, "sequence", thr, "sequence", fou, "dataType", "standard");
 		return data;
 	}
 
-	static public Alignment alignment1() throws Exception {
-		Sequence one = new Sequence("0", "0");
-		Sequence two = new Sequence("1", "1");
-		Sequence three = new Sequence("2", "0");
-		Sequence four = new Sequence("3", "1");
-
-		Alignment data = new Alignment();
-		data.initByName("sequence", one, "sequence", two, "sequence", three,
-				"sequence", four, "dataType", "binary");
-		return data;
-	}
-
-	static public Alignment alignment2() throws Exception {
-		Sequence one = new Sequence("0", "Y");
-		Sequence two = new Sequence("1", "Z");
-		Sequence three = new Sequence("2", "X");
-		Sequence four = new Sequence("3", "Y");
-
-		UserDataType ternary = new UserDataType();
-		ternary.initByName("states", 3, "codelength", 1, "codeMap",
-				"X=0, Y=1, Z=2");
-		Alignment data = new Alignment();
-		data.initByName("sequence", one, "sequence", two, "sequence", three,
-				"sequence", four, "userDataType", ternary);
-		return data;
+	static public CompoundDataType datatype0() {
+		Alignment alignment0 = alignment0();
+		List<DataType> types = new ArrayList<DataType>();
+		Integer[] sizes = new Integer[alignment0.getSiteCount()];
+		DataType standard = new StandardData();
+		for (int i = 0; i < alignment0.getSiteCount(); ++i) {
+			types.add(standard);
+			sizes[i] = 2;
+		}
+		return new CompoundDataType(types, sizes);
 	}
 
 	public void testCompoundAlignment() throws Exception {
 		// Test whether basic functionality (data type size, manual recovery of
 		// component-wise values) is guaranteed.
-		CompoundAlignment compound = null;
-		compound = new CompoundAlignment();
 		Alignment a0 = alignment0();
-		Alignment a1 = alignment1();
-		compound.initByName("alignments", a0, "alignments", a1);
+		CompoundDataType c = datatype0();
+		CompoundAlignment compound = new CompoundAlignment();
+		compound.initByName("alignment", a0, "dataType", "userDataType", "userDataType", c);
 
-		assertEquals(compound.getDataType().getStateCount(), a0.getDataType()
-				.getStateCount() * a1.getDataType().getStateCount());
-		assertEquals(compound.getPattern(0)[0], a0.getPattern(0)[0]
-				* a1.getDataType().getStateCount() + a1.getPattern(0)[0]);
+		assertEquals("The compound alignment should have one column", compound.getSiteCount(), 1);
+
+		Integer expectedStateCount = 1;
+		for (int stateCount : c.getStateCounts()) {
+			expectedStateCount *= stateCount;
+		}
+		assertEquals("The state count of the only column should be the product of all `alignment` state counts",
+				compound.getStateCounts().get(0), expectedStateCount);
+	}
+
+	public void testCompoundAlignmentWithoutDataType() throws Exception {
+		// Test whether basic functionality (data type size, manual recovery of
+		// component-wise values) is guaranteed.
+		Alignment a0 = alignment0();
+		CompoundDataType c = datatype0();
+		CompoundAlignment compound = new CompoundAlignment();
+		compound.initByName("alignment", a0);
+
+		assertEquals("The compound alignment should have one column", 1, compound.getSiteCount());
+
+		Integer expectedStateCount = 1;
+		for (int stateCount : c.getStateCounts()) {
+			expectedStateCount *= stateCount;
+		}
+		assertEquals("The state count of the only column should be the product of all `alignment` state counts",
+				expectedStateCount, compound.getStateCounts().get(0));
 	}
 
 	public void testRecoverCompoundAlignment() throws Exception {
@@ -71,19 +85,16 @@ public class CompoundAlignmentTest extends TestCase {
 		CompoundAlignment compound = null;
 		compound = new CompoundAlignment();
 		Alignment a0 = alignment0();
-		Alignment a1 = alignment1();
-		Alignment a2 = alignment2();
-		compound.initByName("alignments", a0, "alignments", a1, "alignments",
-				a2);
-
-		CompoundDataType c = (CompoundDataType) compound.getDataType();
+		CompoundDataType c = datatype0();
+		compound.initByName("alignment", a0, "dataType", "userDataType", "userDataType", c);
 
 		for (int taxon = 0; taxon < compound.getTaxonCount(); ++taxon) {
 			int p = compound.getPattern(taxon, 0);
 			for (int component = 0; component < c.getComponentCount(); ++component) {
-				Alignment a = compound.getAlignments().get(component);
-				assertEquals(a.getPattern(taxon, 0),
-						c.compoundState2componentState(p, component));
+				assertEquals(
+						String.format("In taxon %s: Site %d incorrectly reconstructed from %d.",
+								compound.getTaxaNames().get(taxon), component, p),
+						a0.getPattern(taxon, component), c.compoundState2componentState(p, component));
 			}
 		}
 	}

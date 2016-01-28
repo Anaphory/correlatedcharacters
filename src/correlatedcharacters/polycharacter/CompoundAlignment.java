@@ -13,6 +13,7 @@ import beast.core.Citation;
 import beast.core.Description;
 import beast.core.Input;
 import beast.core.Input.Validate;
+import beast.core.parameter.IntegerParameter;
 import beast.core.util.Log;
 import beast.evolution.datatype.DataType;
 import beast.evolution.datatype.Nucleotide;
@@ -32,42 +33,50 @@ public class CompoundAlignment extends Alignment {
 	// Consider inputs:
 	// stripInvariantSitesInput
 	// siteWeightsInput
-	public Input<List<Alignment>> alignmentsInput = new Input<List<Alignment>>("alignments", "The component alignments",
-			new ArrayList<Alignment>(), Validate.OPTIONAL);
-	protected List<Alignment> alignments;
+	public Input<Alignment> alignmentInput = new Input<Alignment>("alignment", "The component sites",
+			Validate.REQUIRED);
+	protected Alignment alignment;
 
-	public CompoundAlignment(List<Alignment> inputs) {
+	public CompoundAlignment(Alignment input) {
 		super();
-		initAndValidate(inputs);
+		initAndValidate(input);
 	}
 
 	public CompoundAlignment() {
 		super();
 	}
 
-	private void initAndValidate(List<Alignment> alments) {
-		alignments = alments;
-		if (dataTypeInput.get() == NUCLEOTIDE) {
-			// dataTypeInput has not been set, and therefore has the default
-			// value: Construct new data type
-			List<DataType> componentDataTypes = new ArrayList<DataType>(alignments.size());
-			for (Alignment alignment : alignments) {
-				componentDataTypes.add(alignment.getDataType());
-			}
-			CompoundDataType compoundDataType = new CompoundDataType();
+	private void initAndValidate(Alignment alignment_) {
+		alignment = alignment_;
 
-			// FIXME: Once the appropriate methods have been cleaned up, we
-			// don't have to catch and reraise as RuntimeException any more.
-			try {
-				compoundDataType.initByName("components", componentDataTypes);
-			} catch (Exception e) {
-				throw new IllegalArgumentException(e.getMessage());
+		// Construct or copy the appropriate data type
+		CompoundDataType cdt = new CompoundDataType();
+		if (dataTypeInput.get() == NUCLEOTIDE) {
+			// Guess the data type from the data
+			Integer [] guessedSizes = new Integer[alignment_.getSiteCount()];
+			for (int site=0; site<alignment_.getSiteCount(); ++site) {
+				guessedSizes[site] = 0;
+				for (int i: alignment_.getPattern(alignment_.getPatternIndex(site))) {
+					if (i>=guessedSizes[site]) {
+						guessedSizes[site] = i+1;
+					}
+				}
 			}
-			m_dataType = compoundDataType;
+			cdt.initByName(
+					"components", new StandardData(), 
+					"componentSizes", new IntegerParameter(guessedSizes));
+		} else {
+			if (userDataTypeInput.get() instanceof CompoundDataType) {
+				cdt = (CompoundDataType) userDataTypeInput.get();
+			} else {
+				throw new IllegalArgumentException(
+						"CompoundAlignment data type is either a CompoundDataType or derived from Alignment and may not be specified otherwise");
+			}
 		}
+		m_dataType = cdt;
 
 		// Given that we take alignments, we don't need to sort, just to check.
-		taxaNames = alignments.get(0).getTaxaNames();
+		taxaNames = alignment.getTaxaNames();
 		// counts, the list of sequences, starts at everything in state 0.
 		// stateCounts, the list of stateCount for each sequence, starts being 1
 		// everywhere.
@@ -75,63 +84,29 @@ public class CompoundAlignment extends Alignment {
 			ArrayList<Integer> zero = new ArrayList<Integer>();
 			zero.add(0);
 			counts.add(zero);
-			stateCounts.add(1);
+			stateCounts.add(cdt.getStateCount());
 		}
-		for (Alignment alignment : alignments) {
-			List<String> otherNames = alignment.getTaxaNames();
-			if (otherNames.size() != taxaNames.size()) {
-				throw new IllegalArgumentException("Taxa do not match between component alignments");
-			} else {
-				for (int j = 0; j < taxaNames.size(); ++j) {
-					if (!taxaNames.get(j).equals(otherNames.get(j))) {
-						throw new IllegalArgumentException("Taxa do not match between component alignments: expected "
-								+ taxaNames.get(j) + ", found " + otherNames.get(j) + " instead");
-					}
-				}
-			}
 
-			List<Integer> otherStateCounts = alignment.getStateCounts();
-			for (int j = 0; j < stateCounts.size(); ++j) {
-				stateCounts.set(j, stateCounts.get(j) * otherStateCounts.get(j));
-			}
-
-			List<List<Integer>> otherCounts = alignment.getCounts();
-			for (int j = 0; j < otherCounts.size(); ++j) {
-				counts.get(j).set(0,
-						counts.get(j).get(0) * alignment.getDataType().getStateCount() + otherCounts.get(j).get(0));
+		for (int taxon_ = 0; taxon_ < alignment.getTaxonCount(); ++taxon_) {
+			for (int site_ = 0; site_ < alignment.getSiteCount(); ++site_) {
+				counts.get(taxon_).set(0,
+						counts.get(taxon_).get(0) * cdt.getStateCounts()[site_] + alignment.getPattern(taxon_, site_));
 			}
 		}
 
-		maxStateCount = 1;
-		for (int stateCount : stateCounts) {
-			if (stateCount > maxStateCount) {
-				maxStateCount = stateCount;
-			}
-		}
+		maxStateCount = stateCounts.get(0);
+		
 		if (maxStateCount != m_dataType.getStateCount()) {
 			throw new RuntimeException("Size of data type (" + m_dataType.getStateCount() + ") and of alignments ("
 					+ maxStateCount + ") do not match");
 		}
 
 		if (siteWeightsInput.get() != null) {
-			// TODO: Do Something
+			throw new RuntimeException("No need to specify siteWeights for only one site, did you do something wrong?");
 		}
 
 		// grab data from children
 		// Sanity check: make sure sequences are of same length
-		int nLength = counts.get(0).size();
-		if (!(m_dataType instanceof StandardData)) {
-			for (List<Integer> seq : counts) {
-				if (seq.size() != nLength) {
-					throw new RuntimeException(
-							"Two sequences with different length found: " + nLength + " != " + seq.size());
-				}
-			}
-		}
-		if (siteWeights != null && siteWeights.length != nLength) {
-			throw new RuntimeException(
-					"Number of weights (" + siteWeights.length + ") does not match sequence length (" + nLength + ")");
-		}
 
 		calcPatterns();
 		Log.info.println(toString(false));
@@ -139,10 +114,6 @@ public class CompoundAlignment extends Alignment {
 
 	@Override
 	public void initAndValidate() {
-		initAndValidate(alignmentsInput.get());
-	}
-
-	public List<Alignment> getAlignments() {
-		return alignments;
+		initAndValidate(alignmentInput.get());
 	}
 }

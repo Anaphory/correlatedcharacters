@@ -28,6 +28,7 @@ import beast.core.Citation;
 import beast.core.Description;
 import beast.core.Input;
 import beast.core.Input.Validate;
+import beast.core.parameter.IntegerParameter;
 import beast.evolution.alignment.Alignment;
 import beast.evolution.datatype.DataType;
 
@@ -36,17 +37,19 @@ import beast.evolution.datatype.DataType;
  * @since 2015-04-24
  */
 @Description("Compound datatype. Represents tuples of values from other data types.")
-public class CompoundDataType extends BEASTObject implements DataType {
+public class CompoundDataType extends DataType.Base {
 	public Input<List<DataType>> componentsInput = new Input<List<DataType>>("components",
 			"Component data types for this compound", new ArrayList<DataType>(), Validate.REQUIRED);
+	public Input<IntegerParameter> componentSizesInput = new Input<IntegerParameter>("componentSizes",
+			"Number of different values of each component – Inferred otherwise", (IntegerParameter) null);
 
 	protected List<DataType> components;
 	protected Integer[] stateCounts;
 	protected int stateCount = 1;
 
-	public CompoundDataType(List<DataType> inputs) {
+	public CompoundDataType(List<DataType> inputs, Integer[] sizes) {
 		super();
-		initAndValidate(inputs);
+		initAndValidate(inputs, new IntegerParameter(sizes));
 	}
 
 	public CompoundDataType() {
@@ -55,21 +58,45 @@ public class CompoundDataType extends BEASTObject implements DataType {
 
 	@Override
 	public void initAndValidate() {
-		initAndValidate(componentsInput.get());
+		initAndValidate(componentsInput.get(), componentSizesInput.get());
 	}
-	
-	private void initAndValidate(List<DataType> compnents) {
+
+	private void initAndValidate(List<DataType> compnents, IntegerParameter sizes) {
 		components = compnents;
-		stateCounts = new Integer[components.size()];
-		int n = 0;
-		for (DataType t : components) {
-			int size = t.getStateCount();
-			if (size > 0) {
-				stateCount *= size;
-				stateCounts[n] = size;
-				++n;
+		if (sizes == null) {
+			// We have to rely on the components to tell us their sizes
+			stateCounts = new Integer[components.size()];
+			int n = 0;
+			for (DataType t : components) {
+				int size = t.getStateCount();
+				if (size > 0) {
+					stateCount *= size;
+					stateCounts[n] = size;
+					++n;
+				} else {
+					throw new IllegalArgumentException("Can only compound finite DataTypes");
+				}
+			}
+		} else {
+			// Rely on sizes.
+			if (compnents.size() == 1) {
+				// All components are of the same type, yay!
+				stateCounts = sizes.getValues();
+				// Yes, do start this iteration at i=1, because i=0 is already
+				// filled.
+				for (int i = 1; i < sizes.getDimension(); ++i) {
+					components.add(components.get(0));
+				}
 			} else {
-				throw new IllegalArgumentException("Can only compound finite DataTypes");
+				if (sizes.getDimension() == compnents.size()) {
+					// We know the data types, and we don't trust them, getting
+					// our data from sizes instead.
+					stateCounts = sizes.getValues();
+				} else {
+					// You gave us not enough data types to know everything, but
+					// some different ones? What are we supposed to do?
+					throw new IllegalArgumentException("Size of componentSizes does not match size of components.");
+				}
 			}
 		}
 	}
@@ -84,12 +111,11 @@ public class CompoundDataType extends BEASTObject implements DataType {
 	}
 
 	static public int compoundState2componentState(Integer[] components, int compoundState, int component) {
-		/* // Old Implementation:
-		for (int i = components.length - 1; i > component; --i) {
-			compoundState /= components[i];
-		}
-		return compoundState % components[component];
-		*/
+		/*
+		 * // Old Implementation: for (int i = components.length - 1; i >
+		 * component; --i) { compoundState /= components[i]; } return
+		 * compoundState % components[component];
+		 */
 		return compoundState2componentStates(components, compoundState)[component];
 	}
 
@@ -113,7 +139,7 @@ public class CompoundDataType extends BEASTObject implements DataType {
 	public int getComponentCount() {
 		return components.size();
 	}
-	
+
 	public Integer[] getStateCounts() {
 		return Arrays.copyOf(stateCounts);
 	}
@@ -121,6 +147,10 @@ public class CompoundDataType extends BEASTObject implements DataType {
 	@Override
 	public int getStateCount() {
 		// TODO Auto-generated method stub
+		stateCount = 1;
+		for (int count : stateCounts) {
+			stateCount *= count;
+		}
 		return stateCount;
 	}
 
@@ -141,13 +171,13 @@ public class CompoundDataType extends BEASTObject implements DataType {
 	 * mapped *
 	 */
 	@Override
-	public String state2string(List<Integer> nStates) throws Exception {
-		throw new Exception("CompoundDataType cannot parse strings");
+	public String state2string(List<Integer> nStates) {
+		throw new RuntimeException("CompoundDataType cannot parse strings");
 	}
 
 	@Override
-	public String state2string(int[] nStates) throws Exception {
-		throw new Exception("CompoundDataType cannot parse strings");
+	public String state2string(int[] nStates) {
+		throw new RuntimeException("CompoundDataType cannot parse strings");
 	}
 
 	/**
