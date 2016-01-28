@@ -76,33 +76,23 @@ public class CorrelatedSubstitutionModel extends GeneralSubstitutionModel {
 
 		updateMatrix = true;
 		nrOfStates = 1;
-		for (
-
-		int size : shape)
-
-		{
+		for (int size : shape) {
 			nrOfStates *= size;
 			nonzeroTransitions += size - 1;
 		}
 
-		if (nrOfStates != frequencies.getFreqs().length)
-
-		{
+		if (nrOfStates != frequencies.getFreqs().length) {
 			throw new Exception("Dimension of input 'frequencies' is " + frequencies.getFreqs().length + " but the "
 					+ "shape input gives a total dimension of " + nrOfStates);
 		}
 
-		if (ratesInput.get().getDimension() != nrOfStates * nonzeroTransitions)
-
-		{
+		if (ratesInput.get().getDimension() != nrOfStates * nonzeroTransitions) {
 			throw new Exception("Dimension of input 'rates' is " + ratesInput.get().getDimension() + " but a "
 					+ "rate matrix of dimension " + nrOfStates + "x" + nonzeroTransitions + "="
 					+ nrOfStates * nonzeroTransitions + " was " + "expected");
 		}
 
-		eigenSystem =
-
-		createEigenSystem();
+		eigenSystem = createEigenSystem();
 		// eigenSystem = new DefaultEigenSystem(m_nStates);
 
 		rateMatrix = new double[nrOfStates][nrOfStates];
