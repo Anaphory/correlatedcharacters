@@ -1,33 +1,37 @@
-package test.correlatedcharacters;
+package correlatedcharacters;
 
 import junit.framework.TestCase;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import beast.core.Input;
-import beast.core.Input.Validate;
 import beast.evolution.alignment.Alignment;
-import beast.evolution.alignment.FilteredAlignment;
 import beast.evolution.alignment.Sequence;
 import beast.evolution.datatype.DataType;
 import beast.evolution.datatype.StandardData;
-import beast.evolution.datatype.UserDataType;
 import correlatedcharacters.polycharacter.CompoundAlignment;
 import correlatedcharacters.polycharacter.CompoundDataType;
 
 public class CompoundAlignmentTest extends TestCase {
-	private Alignment[] filtered = new Alignment[4];
-
 	static public Alignment alignment0() {
-		Sequence zer = new Sequence("zer", "1011");
-		Sequence one = new Sequence("one", "0000");
-		Sequence two = new Sequence("two", "0101");
-		Sequence thr = new Sequence("thr", "0101");
-		Sequence fou = new Sequence("fou", "1001");
-
+		Sequence zer, one, two, thr, fou;
+		try {
+			zer = new Sequence("zer", "1011");
+			one = new Sequence("one", "0000");
+			two = new Sequence("two", "0101");
+			thr = new Sequence("thr", "0101");
+			fou = new Sequence("fou", "1001");
+		} catch (Exception e) {
+			throw (RuntimeException) e;
+		}
+		
 		Alignment data = new Alignment();
-		data.initByName("sequence", zer, "sequence", one, "sequence", two, "sequence", thr, "sequence", fou, "dataType", "standard");
+		try {
+			data.initByName("sequence", zer, "sequence", one, "sequence", two, "sequence", thr, "sequence", fou,
+					"dataType", "standard");
+		} catch (Exception e) {
+			throw (RuntimeException) e;
+		}
 		return data;
 	}
 

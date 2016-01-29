@@ -1,4 +1,4 @@
-package test.correlatedcharacters;
+package correlatedcharacters;
 
 import junit.framework.TestCase;
 import beast.evolution.datatype.Binary;
