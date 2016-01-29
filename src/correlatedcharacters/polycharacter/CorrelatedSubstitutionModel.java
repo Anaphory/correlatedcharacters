@@ -87,7 +87,7 @@ public class CorrelatedSubstitutionModel extends GeneralSubstitutionModel {
 		}
 
 		if (ratesInput.get().getDimension() != nrOfStates * nonzeroTransitions) {
-			throw new Exception("Dimension of input 'rates' is " + ratesInput.get().getDimension() + " but a "
+			throw new RuntimeException("Dimension of input 'rates' is " + ratesInput.get().getDimension() + " but a "
 					+ "rate matrix of dimension " + nrOfStates + "x" + nonzeroTransitions + "="
 					+ nrOfStates * nonzeroTransitions + " was " + "expected");
 		}
