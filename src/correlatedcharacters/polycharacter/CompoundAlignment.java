@@ -55,23 +55,19 @@ public class CompoundAlignment extends Alignment {
 			cdt = (CompoundDataType) userDataTypeInput.get();
 		} else if (dataTypeInput.get() == NUCLEOTIDE) {
 			// Guess the data type from the data
-			Integer [] guessedSizes = new Integer[alignment_.getSiteCount()];
-			for (int site=0; site<alignment_.getSiteCount(); ++site) {
+			Integer[] guessedSizes = new Integer[alignment_.getSiteCount()];
+			for (int site = 0; site < alignment_.getSiteCount(); ++site) {
 				guessedSizes[site] = 0;
-				for (int i: alignment_.getPattern(alignment_.getPatternIndex(site))) {
-					if (i>=guessedSizes[site]) {
-						guessedSizes[site] = i+1;
+				for (int i : alignment_.getPattern(alignment_.getPatternIndex(site))) {
+					if (i >= guessedSizes[site]) {
+						guessedSizes[site] = i + 1;
 					}
 				}
 			}
-			cdt.initByName(
-					"components", new StandardData(), 
-					"componentSizes", new IntegerParameter(guessedSizes));
+			cdt.initByName("components", new StandardData(), "componentSizes", new IntegerParameter(guessedSizes));
 		} else {
-			{
-				throw new IllegalArgumentException(
-						"CompoundAlignment data type is either a CompoundDataType or derived from Alignment and may not be specified otherwise");
-			}
+			throw new IllegalArgumentException(
+					"CompoundAlignment data type is either a CompoundDataType or derived from Alignment and may not be specified otherwise");
 		}
 		m_dataType = cdt;
 
@@ -96,7 +92,7 @@ public class CompoundAlignment extends Alignment {
 		}
 
 		maxStateCount = stateCounts.get(0);
-		
+
 		if (maxStateCount != m_dataType.getStateCount()) {
 			throw new RuntimeException("Size of data type (" + m_dataType.getStateCount() + ") and of alignments ("
 					+ maxStateCount + ") do not match");
