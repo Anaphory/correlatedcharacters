@@ -19,9 +19,10 @@
 package correlatedcharacters.polycharacter;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
-import org.fest.swing.util.Arrays;
+import com.sun.xml.internal.bind.v2.runtime.unmarshaller.XsiNilLoader.Array;
 
 import beast.core.BEASTObject;
 import beast.core.Citation;
@@ -40,12 +41,17 @@ import beast.evolution.datatype.DataType;
 public class CompoundDataType extends DataType.Base {
 	public Input<List<DataType>> componentsInput = new Input<List<DataType>>("components",
 			"Component data types for this compound", new ArrayList<DataType>(), Validate.REQUIRED);
-	public Input<IntegerParameter> componentSizesInput = new Input<IntegerParameter>("componentSizes",
-			"Number of different values of each component – Inferred otherwise", (IntegerParameter) null);
-	public Input<String> splitInput = new Input<String>("split", "How to split alignment values into separate traits", ";;");
+	public Input<IntegerParameter> ambiguitiesSizesInput = new Input<IntegerParameter>(
+			"componentSizesIncludingAmbiguities",
+			"Number of different specifications of each component – Inferred otherwise."
+					+ " This is useful when sub-states include ambiguities. It is never reported externally.",
+			(IntegerParameter) null);
+	public Input<String> splitInput = new Input<String>("split", "How to split alignment values into separate traits",
+			";;");
 
 	protected List<DataType> components;
-	protected Integer[] stateCounts;
+	protected Integer[] stateCountsIncludingAmbiguities;
+	protected Integer[] stateCountsExcludingAmbiguities;
 	protected int stateCount = 1;
 
 	public CompoundDataType(List<DataType> inputs, Integer[] sizes) {
@@ -59,40 +65,50 @@ public class CompoundDataType extends DataType.Base {
 
 	@Override
 	public void initAndValidate() {
-		initAndValidate(componentsInput.get(), componentSizesInput.get());
+		initAndValidate(componentsInput.get(), ambiguitiesSizesInput.get());
 	}
 
 	private void initAndValidate(List<DataType> components_, IntegerParameter sizes) {
 		components = components_;
 		if (sizes == null) {
 			// We have to rely on the components to tell us their sizes
-			stateCounts = new Integer[components.size()];
+			stateCountsIncludingAmbiguities = new Integer[components.size()];
 			int n = 0;
 			for (DataType t : components) {
 				int size = t.getStateCount();
 				if (size > 0) {
 					stateCount *= size;
-					stateCounts[n] = size;
+					stateCountsIncludingAmbiguities[n] = size;
 					++n;
 				} else {
 					throw new IllegalArgumentException("Can only compound finite DataTypes");
 				}
 			}
+			stateCountsExcludingAmbiguities = stateCountsIncludingAmbiguities;
 		} else {
 			// Rely on sizes.
+			stateCountsIncludingAmbiguities = sizes.getValues();
+			stateCountsExcludingAmbiguities = new Integer[stateCountsIncludingAmbiguities.length];
 			if (components_.size() == 1) {
 				// All components are of the same type, yay!
-				stateCounts = sizes.getValues();
 				// Yes, do start this iteration at i=1, because i=0 is already
 				// filled.
-				for (int i = 1; i < sizes.getDimension(); ++i) {
-					components.add(components.get(0));
+				DataType component = components.get(0);
+				components = new ArrayList<DataType>();
+				for (int i = 0; i < sizes.getDimension(); ++i) {
+					components.add(component);
+					stateCountsExcludingAmbiguities[i] = component.getStateCount();
+					stateCount *= component.getStateCount();
 				}
 			} else {
 				if (sizes.getDimension() == components_.size()) {
 					// We know the data types, and we don't trust them, getting
 					// our data from sizes instead.
-					stateCounts = sizes.getValues();
+					for (int i = 0; i < sizes.getDimension(); ++i) {
+						DataType component = components.get(0);
+						stateCountsExcludingAmbiguities[i] = component.getStateCount();
+						stateCount *= component.getStateCount();
+					}
 				} else {
 					// You gave us not enough data types to know everything, but
 					// some different ones? What are we supposed to do?
@@ -100,6 +116,8 @@ public class CompoundDataType extends DataType.Base {
 				}
 			}
 		}
+		System.out.printf("%s derived internal sizes to be %s\n", getID(),
+				Arrays.toString(stateCountsIncludingAmbiguities));
 	}
 
 	static public int[] compoundState2componentStates(Integer[] components, int compoundState) {
@@ -121,7 +139,7 @@ public class CompoundDataType extends DataType.Base {
 	}
 
 	public int compoundState2componentState(int compoundState, int component) {
-		return compoundState2componentState(stateCounts, compoundState, component);
+		return compoundState2componentState(stateCountsIncludingAmbiguities, compoundState, component);
 	}
 
 	static public int componentState2compoundState(Integer[] components, int[] componentStates) {
@@ -134,7 +152,7 @@ public class CompoundDataType extends DataType.Base {
 	}
 
 	public int componentState2compoundState(int[] componentStates) {
-		return componentState2compoundState(stateCounts, componentStates);
+		return componentState2compoundState(stateCountsIncludingAmbiguities, componentStates);
 	}
 
 	public int getComponentCount() {
@@ -142,16 +160,11 @@ public class CompoundDataType extends DataType.Base {
 	}
 
 	public Integer[] getStateCounts() {
-		return Arrays.copyOf(stateCounts);
+		return Arrays.copyOf(stateCountsExcludingAmbiguities, stateCountsExcludingAmbiguities.length);
 	}
 
 	@Override
 	public int getStateCount() {
-		// TODO Auto-generated method stub
-		stateCount = 1;
-		for (int count : stateCounts) {
-			stateCount *= count;
-		}
 		return stateCount;
 	}
 
@@ -164,8 +177,8 @@ public class CompoundDataType extends DataType.Base {
 	@Override
 	public List<Integer> string2state(String sSequence) throws Exception {
 		int index = 0;
-		int[] subcodes = new int[components.size()]; 
-		for (String code : sSequence.split(";;")){
+		int[] subcodes = new int[components.size()];
+		for (String code : sSequence.split(";;")) {
 			subcodes[index] = components.get(index).string2state(code).get(0);
 			++index;
 		}
@@ -195,9 +208,16 @@ public class CompoundDataType extends DataType.Base {
 	 */
 	@Override
 	public boolean[] getStateSet(int iState) {
-		boolean[] ans = new boolean[getStateCount()];
-		ans[iState] = true;
-		return ans;
+		boolean[] result = new boolean[] { true };
+		for (int i = 0; i < components.size(); ++i) {
+			boolean[] byComponent = components.get(i).getStateSet(compoundState2componentState(iState, i));
+			boolean[] new_result = new boolean[result.length * byComponent.length];
+			for (int j = 0; j < new_result.length; ++j) {
+				new_result[j] = result[j / byComponent.length] & byComponent[j % byComponent.length];
+			}
+			result = new_result;
+		}
+		return result;
 	}
 
 	/**
@@ -210,6 +230,11 @@ public class CompoundDataType extends DataType.Base {
 
 	@Override
 	public boolean isAmbiguousState(int state) {
+		for (int i = 0; i < components.size(); ++i) {
+			if (components.get(i).isAmbiguousState(compoundState2componentState(state, i))) {
+				return true;
+			}
+		}
 		return false;
 	}
 

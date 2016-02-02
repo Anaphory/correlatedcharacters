@@ -8,13 +8,13 @@ import correlatedcharacters.polycharacter.CompoundDataType;
 
 public class CompoundDataTypeTest extends TestCase {
 
-	static public DataType datatype0() throws Exception {
+	static public DataType datatype0() {
 		Nucleotide n = new Nucleotide();
 		n.initByName();
 		return n;
 	}
 
-	static public DataType datatype1() throws Exception {
+	static public DataType datatype1() {
 		Binary n = new Binary();
 		n.initByName();
 		return n;
@@ -48,7 +48,7 @@ public class CompoundDataTypeTest extends TestCase {
 		}
 	}
 	
-	public void testDecompositionCompoundDataType() throws Exception {
+	public void testDecompositionCompoundDataType() {
 		CompoundDataType compound = null;
 		compound = new CompoundDataType();
 		DataType d0 = datatype0();
@@ -63,8 +63,23 @@ public class CompoundDataTypeTest extends TestCase {
 			}
 		}		
 	}
+
+	public void testGetStateSetIsCompatibleWithIndexOperations() {
+		CompoundDataType compound = null;
+		compound = new CompoundDataType();
+		DataType d0 = datatype0();
+		DataType d1 = datatype1();
+		compound.initByName("components", d0, "components", d1);
+		for (int i=0; i<d0.getStateCount(); ++i) {
+			for (int j=0; j<d1.getStateCount(); ++j) {
+				int k = compound.componentState2compoundState(new int[] {i, j});
+				assertEquals(true,
+						compound.getStateSet(k)[k]);
+			}
+		}		
+	}
 	
-	public void testRecompositionCompoundDataType() throws Exception {
+	public void testRecompositionCompoundDataType() {
 		CompoundDataType compound = null;
 		compound = new CompoundDataType();
 		DataType d0 = datatype0();
