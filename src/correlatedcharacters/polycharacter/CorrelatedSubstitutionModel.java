@@ -204,10 +204,10 @@ public class CorrelatedSubstitutionModel extends GeneralSubstitutionModel {
 					for (int other = 1; other < shape[dependsOn]; ++other) {
 						int otherIndex = from + dependsOnStep * other;
 						checked[otherIndex] = true;
-						System.out.printf("> %d ?= %d\n", from, otherIndex);
+						// System.out.printf("> %d ?= %d\n", from, otherIndex);
 						double otherRate = rates.getArrayValue(otherIndex * nonzeroTransitions + componentTo);
 						if (thisRate != otherRate) {
-							System.out.printf("  No: %f vs. %f\n", thisRate, otherRate);
+							// System.out.printf("  No: %f vs. %f\n", thisRate, otherRate);
 							return true;
 						}
 					}

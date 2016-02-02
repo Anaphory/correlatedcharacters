@@ -42,6 +42,7 @@ public class CompoundDataType extends DataType.Base {
 			"Component data types for this compound", new ArrayList<DataType>(), Validate.REQUIRED);
 	public Input<IntegerParameter> componentSizesInput = new Input<IntegerParameter>("componentSizes",
 			"Number of different values of each component – Inferred otherwise", (IntegerParameter) null);
+	public Input<String> splitInput = new Input<String>("split", "How to split alignment values into separate traits", ";;");
 
 	protected List<DataType> components;
 	protected Integer[] stateCounts;
@@ -61,8 +62,8 @@ public class CompoundDataType extends DataType.Base {
 		initAndValidate(componentsInput.get(), componentSizesInput.get());
 	}
 
-	private void initAndValidate(List<DataType> compnents, IntegerParameter sizes) {
-		components = compnents;
+	private void initAndValidate(List<DataType> components_, IntegerParameter sizes) {
+		components = components_;
 		if (sizes == null) {
 			// We have to rely on the components to tell us their sizes
 			stateCounts = new Integer[components.size()];
@@ -79,7 +80,7 @@ public class CompoundDataType extends DataType.Base {
 			}
 		} else {
 			// Rely on sizes.
-			if (compnents.size() == 1) {
+			if (components_.size() == 1) {
 				// All components are of the same type, yay!
 				stateCounts = sizes.getValues();
 				// Yes, do start this iteration at i=1, because i=0 is already
@@ -88,7 +89,7 @@ public class CompoundDataType extends DataType.Base {
 					components.add(components.get(0));
 				}
 			} else {
-				if (sizes.getDimension() == compnents.size()) {
+				if (sizes.getDimension() == components_.size()) {
 					// We know the data types, and we don't trust them, getting
 					// our data from sizes instead.
 					stateCounts = sizes.getValues();
@@ -162,7 +163,15 @@ public class CompoundDataType extends DataType.Base {
 	 */
 	@Override
 	public List<Integer> string2state(String sSequence) throws Exception {
-		throw new Exception("CompoundDataType cannot parse strings");
+		int index = 0;
+		int[] subcodes = new int[components.size()]; 
+		for (String code : sSequence.split(";;")){
+			subcodes[index] = components.get(index).string2state(code).get(0);
+			++index;
+		}
+		List<Integer> result = new ArrayList<Integer>(1);
+		result.add(componentState2compoundState(subcodes));
+		return result;
 	}
 
 	/**

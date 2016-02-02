@@ -51,7 +51,9 @@ public class CompoundAlignment extends Alignment {
 
 		// Construct or copy the appropriate data type
 		CompoundDataType cdt = new CompoundDataType();
-		if (dataTypeInput.get() == NUCLEOTIDE) {
+		if (userDataTypeInput.get() instanceof CompoundDataType) {
+			cdt = (CompoundDataType) userDataTypeInput.get();
+		} else if (dataTypeInput.get() == NUCLEOTIDE) {
 			// Guess the data type from the data
 			Integer [] guessedSizes = new Integer[alignment_.getSiteCount()];
 			for (int site=0; site<alignment_.getSiteCount(); ++site) {
@@ -66,9 +68,7 @@ public class CompoundAlignment extends Alignment {
 					"components", new StandardData(), 
 					"componentSizes", new IntegerParameter(guessedSizes));
 		} else {
-			if (userDataTypeInput.get() instanceof CompoundDataType) {
-				cdt = (CompoundDataType) userDataTypeInput.get();
-			} else {
+			{
 				throw new IllegalArgumentException(
 						"CompoundAlignment data type is either a CompoundDataType or derived from Alignment and may not be specified otherwise");
 			}
@@ -80,6 +80,7 @@ public class CompoundAlignment extends Alignment {
 		// counts, the list of sequences, starts at everything in state 0.
 		// stateCounts, the list of stateCount for each sequence, starts being 1
 		// everywhere.
+		maxStateCount = 1;
 		for (int i = 0; i < taxaNames.size(); ++i) {
 			ArrayList<Integer> zero = new ArrayList<Integer>();
 			zero.add(0);
