@@ -22,15 +22,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import com.sun.xml.internal.bind.v2.runtime.unmarshaller.XsiNilLoader.Array;
-
-import beast.core.BEASTObject;
-import beast.core.Citation;
 import beast.core.Description;
 import beast.core.Input;
 import beast.core.Input.Validate;
 import beast.core.parameter.IntegerParameter;
-import beast.evolution.alignment.Alignment;
 import beast.evolution.datatype.DataType;
 
 /**
