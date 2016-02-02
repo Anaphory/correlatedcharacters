@@ -64,7 +64,11 @@ public class CompoundAlignment extends Alignment {
 					}
 				}
 			}
-			cdt.initByName("components", new StandardData(), "componentSizes", new IntegerParameter(guessedSizes));
+			try {
+				cdt.initByName("components", new StandardData(), "componentSizes", new IntegerParameter(guessedSizes));
+			} catch (Exception e) {
+				throw (RuntimeException) e;
+			}
 		} else {
 			throw new IllegalArgumentException(
 					"CompoundAlignment data type is either a CompoundDataType or derived from Alignment and may not be specified otherwise");
