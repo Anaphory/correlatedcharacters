@@ -54,9 +54,7 @@ public class CorrelatedSubstitutionModelTest extends TestCase {
 		this.shape = shapeV;
 		this.rates = ratesV;
 		freqs = new Frequencies();
-		freqs.initByName(
-				"frequencies", new RealParameter(freqsV),
-				"estimate", false);
+		freqs.initByName("frequencies", new RealParameter(freqsV), "estimate", false);
 		this.expectedResult = expectedResultV;
 	}
 
@@ -85,11 +83,19 @@ public class CorrelatedSubstitutionModelTest extends TestCase {
 								0.0, 0.0, 0.25, 0.25, 0.25, -0.75 }, },
 				// [2]
 				{ new Integer[] { 2, 3 },
-						new Double[] { 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1. },
-						new Double[] { 0.25, 0.25, 0.125, 0.125, 0.125, 0.125 },
-						new Double[] { -1.0, 0.5, 0.25, 0.25, 0.0, 0.0, 0.5, -1.0, 0.25, 0.0, 0.25, 0.0, 0.5, 0.5,
-								-1.25, 0.0, 0.0, 0.25, 0.5, 0.0, 0.0, -1.0, 0.25, 0.25, 0.0, 0.5, 0.0, 0.25, -1.0, 0.25,
-								0.0, 0.0, 0.25, 0.25, 0.25, -0.75 }, },
+						new Double[] { 1., 2., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1. },
+						new Double[] { 0.1666666666666666666666666666, 0.1666666666666666666666666666,
+								0.1666666666666666666666666666, 0.1666666666666666666666666666,
+								0.1666666666666666666666666666, 0.1666666666666666666666666666 },
+						new Double[] { -1.2631578947368423, 0.6315789473684211, 0.31578947368421056,
+								0.31578947368421056, 0.0, 0.0, 0.31578947368421056, -0.9473684210526317,
+								0.31578947368421056, 0.0, 0.31578947368421056, 0.0, 0.31578947368421056,
+								0.31578947368421056, -0.9473684210526317, 0.0, 0.0, 0.31578947368421056,
+								0.31578947368421056, 0.0, 0.0, -0.9473684210526317, 0.31578947368421056,
+								0.31578947368421056, 0.0, 0.31578947368421056, 0.0, 0.31578947368421056,
+								-0.9473684210526317, 0.31578947368421056, 0.0, 0.0, 0.31578947368421056,
+								0.31578947368421056, 0.31578947368421056, -0.9473684210526317 }, },
+
 				// [3]
 				{ new Integer[] { 2, 2 }, new Double[] { 2., 1., 4., 3., 5., 6., 7., 8. },
 						new Double[] { 0.25, 0.25, 0.25, 0.25 },
@@ -130,10 +136,7 @@ public class CorrelatedSubstitutionModelTest extends TestCase {
 	@Test
 	public void testCSM() throws Exception {
 		CSMwithPublicMatrix csm = new CSMwithPublicMatrix();
-		csm.initByName(
-				"rates", new RealParameter(rates),
-				"frequencies", freqs,
-				"shape", new IntegerParameter(shape));
+		csm.initByName("rates", new RealParameter(rates), "frequencies", freqs, "shape", new IntegerParameter(shape));
 
 		final double[][] result = csm.getMatrix();
 
@@ -160,10 +163,7 @@ public class CorrelatedSubstitutionModelTest extends TestCase {
 			nrOfStates *= d;
 		}
 
-		csm.initByName(
-				"rates", new RealParameter(rates),
-				"frequencies", freqs,
-				"shape", new IntegerParameter(shape));
+		csm.initByName("rates", new RealParameter(rates), "frequencies", freqs, "shape", new IntegerParameter(shape));
 
 		final double[][] result = csm.getMatrix();
 
@@ -171,39 +171,60 @@ public class CorrelatedSubstitutionModelTest extends TestCase {
 			for (int dependsOn = 0; dependsOn < shape.length; ++dependsOn) {
 				if (component != dependsOn) {
 					System.out.printf("%d depends on %d?\n", component, dependsOn);
+
 					// Calculate explicitly whether the rates are dependent.
-					// Iterate over all rates where component changes.
 					boolean byHand = false;
+
+					// Iterate over all states.
 					for (int rateFrom = 0; rateFrom < nrOfStates; ++rateFrom) {
 						int[] fromComponents = CompoundDataType.compoundState2componentStates(shape, rateFrom);
-						int[] toComponents = fromComponents.clone();
+						int[] toComponents = Arrays.copyOf(fromComponents, fromComponents.length);
+
+						// Take all alternative values of component, compared to
+						// from.
 						for (int to = 0; to < shape[component]; ++to) {
 							if (to != fromComponents[component]) {
-								toComponents[component] = to;
 
+								// This gives us an index in the matrix
+								// differing from rateFrom only in component.
+								toComponents[component] = to;
 								int rateTo = CompoundDataType.componentState2compoundState(shape, toComponents);
+
+								// Together, they give us a rate.
 								// Calculate the rate where `component`
 								// changes to `to`, in any context.
 								double rate = result[rateFrom][rateTo];
 
-								// Calculate the rates where `component`
-								// changes to `to` and – ceteris paribus –
+								// Look up all the other rates where `component`
+								// changes from `from` to `to`, but where
 								// `dependsOn` takes all other values.
 								// If any of them deviates from the
 								// previously calculated rate, the
 								// `component` evolution depends on
 								// `dependsOn`.
 								for (int dependentState = 0; dependentState < shape[dependsOn]; ++dependentState) {
-									fromComponents[dependsOn] = dependentState;
-									toComponents[dependsOn] = dependentState;
-									double otherRate = result[CompoundDataType.componentState2compoundState(shape,
-											fromComponents)][CompoundDataType.componentState2compoundState(shape,
-													toComponents)];
+									int[] otherFromComponents = Arrays.copyOf(fromComponents, fromComponents.length);
+									otherFromComponents[dependsOn] = dependentState;
+									int[] otherToComponents = Arrays.copyOf(toComponents, toComponents.length);
+									otherToComponents[dependsOn] = dependentState;
+									int otherRateFrom = CompoundDataType.componentState2compoundState(shape,
+											otherFromComponents);
+									int otherRateTo = CompoundDataType.componentState2compoundState(shape,
+											otherToComponents);
+									double otherRate = result[otherRateFrom][otherRateTo];
 									if (rate != otherRate) {
-										System.out.printf("Rate %d,%d (%f) did not match %d,%d (%f)\n", rateFrom,
-												rateTo, rate,
-												CompoundDataType.componentState2compoundState(shape, fromComponents),
-												CompoundDataType.componentState2compoundState(shape, toComponents),
+										System.out.printf("Rate %d=%s,%d=%s (%f) did not match %d=%s,%d=%s (%f)\n",
+												rateFrom,
+												Arrays.toString(CompoundDataType.compoundState2componentStates(shape,
+														rateFrom)),
+												rateTo,
+												Arrays.toString(
+														CompoundDataType.compoundState2componentStates(shape, rateTo)),
+												rate, otherRateFrom,
+												Arrays.toString(CompoundDataType.compoundState2componentStates(shape,
+														otherRateFrom)),
+												otherRateTo, Arrays.toString(CompoundDataType
+														.compoundState2componentStates(shape, otherRateTo)),
 												otherRate);
 										byHand = true;
 									}
@@ -217,7 +238,7 @@ public class CorrelatedSubstitutionModelTest extends TestCase {
 					System.out.print(" / actually: ");
 					System.out.print(byHand);
 					System.out.print("\n");
-					assertEquals(fromMethod, byHand);
+					assertEquals(byHand, fromMethod);
 				}
 			}
 		}
@@ -244,10 +265,7 @@ public class CorrelatedSubstitutionModelTest extends TestCase {
 
 		// Generate the rates matrix
 		CSMwithPublicMatrix csm = new CSMwithPublicMatrix();
-		csm.initByName(
-				"rates", new RealParameter(rates),
-				"frequencies", freqs,
-				"shape", new IntegerParameter(shape));
+		csm.initByName("rates", new RealParameter(rates), "frequencies", freqs, "shape", new IntegerParameter(shape));
 
 		final double[][] result = csm.getMatrix();
 
