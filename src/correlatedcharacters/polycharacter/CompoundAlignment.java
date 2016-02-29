@@ -45,6 +45,19 @@ public class CompoundAlignment extends Alignment {
 	public CompoundAlignment() {
 		super();
 	}
+	
+	static public Integer[] guessSizes(Alignment alignment_) {
+		Integer[] guessedSizes = new Integer[alignment_.getSiteCount()];
+		for (int site = 0; site < alignment_.getSiteCount(); ++site) {
+			guessedSizes[site] = 0;
+			for (int i : alignment_.getPattern(alignment_.getPatternIndex(site))) {
+				if (i >= guessedSizes[site]) {
+					guessedSizes[site] = i + 1;
+				}
+			}
+		}
+		return guessedSizes;
+	}
 
 	private void initAndValidate(Alignment alignment_) {
 		alignment = alignment_;
@@ -55,17 +68,12 @@ public class CompoundAlignment extends Alignment {
 			cdt = (CompoundDataType) userDataTypeInput.get();
 		} else if (dataTypeInput.get() == NUCLEOTIDE) {
 			// Guess the data type from the data
-			Integer[] guessedSizes = new Integer[alignment_.getSiteCount()];
-			for (int site = 0; site < alignment_.getSiteCount(); ++site) {
-				guessedSizes[site] = 0;
-				for (int i : alignment_.getPattern(alignment_.getPatternIndex(site))) {
-					if (i >= guessedSizes[site]) {
-						guessedSizes[site] = i + 1;
-					}
-				}
-			}
+			Integer[] guessedSizes = guessSizes(alignment);
 			try {
-				cdt.initByName("components", new StandardData(), "componentSizes", new IntegerParameter(guessedSizes));
+				cdt.initByName(
+						"components", new StandardData(),
+						"componentSizes", new IntegerParameter(guessedSizes)
+						);
 			} catch (Exception e) {
 				throw (RuntimeException) e;
 			}
