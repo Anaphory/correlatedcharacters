@@ -18,6 +18,8 @@
  */
 package correlatedcharacters.polycharacter;
 
+import java.lang.reflect.InvocationTargetException;
+
 import beast.core.Citation;
 import beast.core.Description;
 import beast.core.Function;
@@ -51,7 +53,7 @@ public class CorrelatedSubstitutionModel extends GeneralSubstitutionModel {
 	protected int nonzeroTransitions = 0;
 
 	@Override
-	public void initAndValidate() throws Exception {
+	public void initAndValidate() {
 		frequencies = frequenciesInput.get();
 
 		// One of these three Inputs is required, but there is no way to specify
@@ -82,8 +84,8 @@ public class CorrelatedSubstitutionModel extends GeneralSubstitutionModel {
 		}
 
 		if (nrOfStates != frequencies.getFreqs().length) {
-			throw new Exception("Dimension of input 'frequencies' is " + frequencies.getFreqs().length + " but the "
-					+ "shape input gives a total dimension of " + nrOfStates);
+			throw new RuntimeException("Dimension of input 'frequencies' is " + frequencies.getFreqs().length
+					+ " but the " + "shape input gives a total dimension of " + nrOfStates);
 		}
 
 		if (ratesInput.get().getDimension() != nrOfStates * nonzeroTransitions) {
@@ -92,8 +94,22 @@ public class CorrelatedSubstitutionModel extends GeneralSubstitutionModel {
 					+ nrOfStates * nonzeroTransitions + " was " + "expected");
 		}
 
-		eigenSystem = createEigenSystem();
-		// eigenSystem = new DefaultEigenSystem(m_nStates);
+		try {
+			eigenSystem = createEigenSystem();
+			// eigenSystem = new DefaultEigenSystem(m_nStates);
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InstantiationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InvocationTargetException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 		rateMatrix = new double[nrOfStates][nrOfStates];
 		relativeRates = new double[ratesInput.get().getDimension()];
@@ -207,7 +223,8 @@ public class CorrelatedSubstitutionModel extends GeneralSubstitutionModel {
 						// System.out.printf("> %d ?= %d\n", from, otherIndex);
 						double otherRate = rates.getArrayValue(otherIndex * nonzeroTransitions + componentTo);
 						if (thisRate != otherRate) {
-							// System.out.printf("  No: %f vs. %f\n", thisRate, otherRate);
+							// System.out.printf(" No: %f vs. %f\n", thisRate,
+							// otherRate);
 							return true;
 						}
 					}

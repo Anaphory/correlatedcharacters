@@ -181,7 +181,7 @@ public class CompoundDataType extends DataType.Base {
 	 * exception when parsing error occur *
 	 */
 	@Override
-	public List<Integer> string2state(String sSequence) throws Exception {
+	public List<Integer> string2state(String sSequence) {
 		int index = 0;
 		int[] subcodes = new int[components.size()];
 		for (String code : sSequence.split(";;")) {

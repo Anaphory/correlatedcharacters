@@ -21,7 +21,7 @@ public class IndependentEvolutionPrior extends Distribution {
 	private double logPDependent;
 	
 	@Override
-    public double calculateLogP() throws Exception {
+    public double calculateLogP() {
 		if (isDirtyCalculation()) {
 			calcLogP();
 		}
