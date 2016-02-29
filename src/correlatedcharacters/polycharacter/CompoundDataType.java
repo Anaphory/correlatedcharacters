@@ -41,6 +41,10 @@ public class CompoundDataType extends DataType.Base {
 			"Number of different specifications of each component – Inferred otherwise."
 					+ " This is useful when sub-states include ambiguities. It is never reported externally.",
 			(IntegerParameter) null);
+	public Input<IntegerParameter> sizesInput = new Input<IntegerParameter>(
+			"componentSizes",
+			"Number of different specifications of each component – Inferred otherwise.",
+			(IntegerParameter) null);
 	public Input<String> splitInput = new Input<String>("split", "How to split alignment values into separate traits",
 			";;");
 
@@ -49,9 +53,9 @@ public class CompoundDataType extends DataType.Base {
 	protected Integer[] stateCountsExcludingAmbiguities;
 	protected int stateCount = 1;
 
-	public CompoundDataType(List<DataType> inputs, Integer[] sizes) {
+	public CompoundDataType(List<DataType> inputs, Integer[] sizes, Integer[] sizesWithAmbiguities) {
 		super();
-		initAndValidate(inputs, new IntegerParameter(sizes));
+		initAndValidate(inputs, new IntegerParameter(sizes), new IntegerParameter(sizesWithAmbiguities));
 	}
 
 	public CompoundDataType() {
@@ -60,30 +64,28 @@ public class CompoundDataType extends DataType.Base {
 
 	@Override
 	public void initAndValidate() {
-		initAndValidate(componentsInput.get(), ambiguitiesSizesInput.get());
+		initAndValidate(componentsInput.get(), ambiguitiesSizesInput.get(), sizesInput.get());
 	}
 
-	private void initAndValidate(List<DataType> components_, IntegerParameter sizes) {
+	private void initAndValidate(List<DataType> components_, IntegerParameter ambiguitiesSizes, IntegerParameter sizes) {
 		components = components_;
 		if (sizes == null) {
 			// We have to rely on the components to tell us their sizes
-			stateCountsIncludingAmbiguities = new Integer[components.size()];
+			stateCountsExcludingAmbiguities = new Integer[components.size()];
 			int n = 0;
 			for (DataType t : components) {
 				int size = t.getStateCount();
 				if (size > 0) {
 					stateCount *= size;
-					stateCountsIncludingAmbiguities[n] = size;
+					stateCountsExcludingAmbiguities[n] = size;
 					++n;
 				} else {
 					throw new IllegalArgumentException("Can only compound finite DataTypes");
 				}
 			}
-			stateCountsExcludingAmbiguities = stateCountsIncludingAmbiguities;
 		} else {
 			// Rely on sizes.
-			stateCountsIncludingAmbiguities = sizes.getValues();
-			stateCountsExcludingAmbiguities = new Integer[stateCountsIncludingAmbiguities.length];
+			stateCountsExcludingAmbiguities = sizes.getValues();
 			if (components_.size() == 1) {
 				// All components are of the same type, yay!
 				// Yes, do start this iteration at i=1, because i=0 is already
@@ -91,23 +93,32 @@ public class CompoundDataType extends DataType.Base {
 				DataType component = components.get(0);
 				components = new ArrayList<DataType>();
 				for (int i = 0; i < sizes.getDimension(); ++i) {
-					components.add(component);
-					stateCountsExcludingAmbiguities[i] = component.getStateCount();
-					stateCount *= component.getStateCount();
+					stateCount *= stateCountsExcludingAmbiguities[i];
 				}
 			} else {
 				if (sizes.getDimension() == components_.size()) {
 					// We know the data types, and we don't trust them, getting
 					// our data from sizes instead.
 					for (int i = 0; i < sizes.getDimension(); ++i) {
-						DataType component = components.get(0);
-						stateCountsExcludingAmbiguities[i] = component.getStateCount();
-						stateCount *= component.getStateCount();
+						stateCount *= stateCountsExcludingAmbiguities[i];
 					}
 				} else {
 					// You gave us not enough data types to know everything, but
 					// some different ones? What are we supposed to do?
 					throw new IllegalArgumentException("Size of componentSizes does not match size of components.");
+				}
+			}
+		}
+		if (ambiguitiesSizes == null) {
+			stateCountsIncludingAmbiguities = new Integer[stateCountsExcludingAmbiguities.length];
+			for (int i=0; i<stateCountsExcludingAmbiguities.length; ++i) {
+				stateCountsIncludingAmbiguities[i] = stateCountsExcludingAmbiguities[i] + 1;
+			}
+		} else {
+			stateCountsIncludingAmbiguities = ambiguitiesSizes.getValues();
+			for (int i=0; i<stateCountsExcludingAmbiguities.length; ++i) {
+				if (stateCountsIncludingAmbiguities[i] < stateCountsExcludingAmbiguities[i]) {
+					throw new RuntimeException("Ambiguities cannot reduce the number of different values!");
 				}
 			}
 		}
