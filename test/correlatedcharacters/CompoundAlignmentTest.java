@@ -28,7 +28,7 @@ public class CompoundAlignmentTest extends TestCase {
 		Alignment data = new Alignment();
 		try {
 			data.initByName("sequence", zer, "sequence", one, "sequence", two, "sequence", thr, "sequence", fou,
-					"dataType", "standard");
+					"dataType", "standard", "id", "Alignment0");
 		} catch (Exception e) {
 			throw (RuntimeException) e;
 		}
@@ -44,7 +44,7 @@ public class CompoundAlignmentTest extends TestCase {
 			types.add(standard);
 			sizes[i] = 2;
 		}
-		return new CompoundDataType(types, sizes);
+		return new CompoundDataType(types, sizes, sizes);
 	}
 
 	public void testCompoundAlignment() throws Exception {
