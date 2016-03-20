@@ -289,7 +289,8 @@ public class CorrelatedSubstitutionModelTest extends TestCase {
 							++hammingDistance;
 						}
 					}
-					assertEquals(1, hammingDistance);
+					assertEquals(String.format("The Hamming distance between states %d and %d was not 1",
+							k, l), 1, hammingDistance);
 				}
 			}
 			assertNotNull(diag);

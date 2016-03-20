@@ -45,7 +45,7 @@ public class CompoundAlignment extends Alignment {
 	public CompoundAlignment() {
 		super();
 	}
-	
+
 	static public Integer[] guessSizes(Alignment alignment_) {
 		Integer[] guessedSizes = new Integer[alignment_.getSiteCount()];
 		for (int site = 0; site < alignment_.getSiteCount(); ++site) {
@@ -69,14 +69,12 @@ public class CompoundAlignment extends Alignment {
 		} else if (dataTypeInput.get() == NUCLEOTIDE) {
 			// Guess the data type from the data
 			Integer[] guessedSizes = guessSizes(alignment);
-			try {
-				cdt.initByName(
-						"components", new StandardData(),
-						"componentSizes", new IntegerParameter(guessedSizes)
-						);
-			} catch (Exception e) {
-				throw (RuntimeException) e;
+			List<DataType> components = new ArrayList<DataType>(); 
+			for (int i=0; i<guessedSizes.length; ++i) {
+				components.add(alignment.getDataType());
 			}
+			cdt.initByName("components", components, "componentSizesIncludingAmbiguities",
+					new IntegerParameter(guessedSizes));
 		} else {
 			throw new IllegalArgumentException(
 					"CompoundAlignment data type is either a CompoundDataType or derived from Alignment and may not be specified otherwise");

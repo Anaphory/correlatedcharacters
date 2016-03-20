@@ -34,6 +34,10 @@ import beast.evolution.datatype.DataType;
  */
 @Description("Compound datatype. Represents tuples of values from other data types.")
 public class CompoundDataType extends DataType.Base {
+	public Input<IntegerParameter> reserveAmbiguities = new Input<IntegerParameter>("ambiguities",
+			"Number of additional entries to reserve internally for ambiguities",
+			new IntegerParameter(new Integer[] {1}),
+			Validate.OPTIONAL);
 	public Input<List<DataType>> componentsInput = new Input<List<DataType>>("components",
 			"Component data types for this compound", new ArrayList<DataType>(), Validate.REQUIRED);
 	public Input<IntegerParameter> ambiguitiesSizesInput = new Input<IntegerParameter>(
@@ -112,7 +116,8 @@ public class CompoundDataType extends DataType.Base {
 		if (ambiguitiesSizes == null) {
 			stateCountsIncludingAmbiguities = new Integer[stateCountsExcludingAmbiguities.length];
 			for (int i=0; i<stateCountsExcludingAmbiguities.length; ++i) {
-				stateCountsIncludingAmbiguities[i] = stateCountsExcludingAmbiguities[i] + 1;
+				stateCountsIncludingAmbiguities[i] = stateCountsExcludingAmbiguities[i]
+						+ reserveAmbiguities.get().getValue();
 			}
 		} else {
 			stateCountsIncludingAmbiguities = ambiguitiesSizes.getValues();
@@ -145,7 +150,7 @@ public class CompoundDataType extends DataType.Base {
 	}
 
 	public int compoundState2componentState(int compoundState, int component) {
-		return compoundState2componentState(stateCountsIncludingAmbiguities, compoundState, component);
+		return compoundState2componentState(stateCountsExcludingAmbiguities, compoundState, component);
 	}
 
 	static public int componentState2compoundState(Integer[] components, int[] componentStates) {
@@ -158,7 +163,7 @@ public class CompoundDataType extends DataType.Base {
 	}
 
 	public int componentState2compoundState(int[] componentStates) {
-		return componentState2compoundState(stateCountsIncludingAmbiguities, componentStates);
+		return componentState2compoundState(stateCountsExcludingAmbiguities, componentStates);
 	}
 
 	public int getComponentCount() {
