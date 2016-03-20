@@ -6,23 +6,13 @@
 	<map name="LogNormal">beast.math.distributions.LogNormalDistributionModel</map>
 	<map name="Exponential">beast.math.distributions.Exponential</map>
 
-	<datatype id="binary" spec="StandardData" nrOfStates="2"
-		ambiguities="" />
-
-
 	<data id="characters" spec="CompoundAlignment">
-		<alignments id="characters1" dataType="user defined" spec="Alignment"
-			userDataType="@binary">
-			<sequence id="ch_1a" taxon="t1" value="0" />
-			<sequence id="ch_2a" taxon="t2" value="1" />
-			<sequence id="ch_3a" taxon="t3" value="1" />
-		</alignments>
-		<alignments id="characters2" dataType="user defined" spec="Alignment"
-			userDataType="@binary">
-			<sequence id="ch_1b" taxon="t1" value="0" />
-			<sequence id="ch_2b" taxon="t2" value="0" />
-			<sequence id="ch_3b" taxon="t3" value="1" />
-		</alignments>
+		<alignment id="characters1" dataType="user defined" spec="Alignment">
+			<userDataType spec="beast.evolution.datatype.Binary"/>
+			<sequence id="ch_1a" taxon="t1" value="00" />
+			<sequence id="ch_2a" taxon="t2" value="10" />
+			<sequence id="ch_3a" taxon="t3" value="11" />
+		</alignment>
 	</data>
 
 	<run chainLength="200" id="mcmc" spec="MCMC" preBurnin="0">
@@ -41,8 +31,9 @@
 			IsLabelledNewick="true" newick="(t3:2,(t1:1,t2:1):1);" taxa="@characters">
 		</init>
 
-		<!--  This operator does nothing, because it scales "1"s by "1". -->
-		<operator id="treeModel000(narrow)" spec="ScaleOperator" parameter="@rates" weight="1" />
+		<!-- This operator does nothing, because it scales "1"s by "1". -->
+		<operator id="treeModel000(narrow)" spec="ScaleOperator"
+			parameter="@rates" weight="1" />
 
 		<distribution id="posterior" spec="CompoundDistribution">
 			<distribution id="prior" spec="CompoundDistribution">
