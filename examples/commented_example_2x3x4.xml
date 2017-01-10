@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<beast version='2.0'
+	namespace="beast.core:beast.core.util:beast.evolution.alignment">
+	<map name="prior">beast.math.distributions.Prior</map>
+
+	<!-- This example file shows how to set up a beast analysis of correlated 
+		character evolution under a reversible Markov chain assumption. It shows 
+		how to set up more than two non-binary characters co-evolving. -->
+
+	<!-- The data is given by an alignment. In order to avoid manually messing 
+		with indices, it is recommended to use the CompoundAlignment structure – 
+		the package's tests enforce that the indexing structure of CompoundAligment 
+		and all other components of the correlated evolution model are compatible. -->
+	<data id="characters" spec="correlated.polycharacter.CompoundAlignment">
+		<!-- CompoundAlignment takes as its main input another (short) alignment, 
+			the columns of which it then aggregates. For a sub-alignment with non-equal 
+			data types, such as in the 2×3×4 example we construct, this is slightly more 
+			complex. -->
+		<alignment id="characters1" dataType="user defined" spec="Alignment">
+			<userDataType spec="beast.evolution.datatype.Binary" />
+			<sequence id="ch_1a" taxon="t1" value="00" />
+			<sequence id="ch_2a" taxon="t2" value="10" />
+			<sequence id="ch_3a" taxon="t3" value="11" />
+		</alignment>
+	</data>
+
+	<run chainLength="200" id="mcmc" spec="MCMC" preBurnin="0">
+		<state id="state" storeEvery="100">
+			<tree id="tree" name="stateNode" />
+
+			<parameter id="rates" name="stateNode">
+				1 1
+				1 1
+				1 1
+				1 1
+			</parameter>
+		</state>
+
+		<init id="treeinit" initial="@tree" spec="beast.util.TreeParser"
+			IsLabelledNewick="true" newick="(t3:2,(t1:1,t2:1):1);" taxa="@characters">
+		</init>
+
+		<!-- This operator does nothing, because it scales "1"s by "1". -->
+		<operator id="treeModel000(narrow)" spec="beast.evolution.operators.ScaleOperator"
+			parameter="@rates" weight="1" />
+
+		<distribution id="posterior" spec="CompoundDistribution">
+			<distribution id="prior" spec="CompoundDistribution">
+				<prior id="ratesPrior" name="distribution" x="@rates">
+					<distr id="lognormalrate" spec="beast.math.distributions.Exponential">
+						<parameter estimate="false" id="r0" name="mean" value="1" />
+					</distr>
+				</prior>
+			</distribution>
+			<distribution id="likelihood" spec="CompoundDistribution">
+				<distribution id="treelk"
+					spec="beast.evolution.likelihood.TreeLikelihood" tree="@tree" data="@characters">
+					<siteModel id="sitemodel" spec="beast.evolution.sitemodel.SiteModel">
+						<substModel id="subst"
+							spec="correlated.polycharacter.CorrelatedSubstitutionModel"
+							rates="@rates" shape="2 2">
+							<frequencies name="frequencies" id="frequencies"
+								spec="beast.evolution.substitutionmodel.Frequencies" estimate="false"
+								frequencies="0.25 0.25 0.25 0.25" />
+						</substModel>
+					</siteModel>
+				</distribution>
+			</distribution>
+		</distribution>
+
+		<logger id="screenlog" logEvery="1">
+			<plate var="n" range="posterior,prior,ratesPrior,likelihood,treelk">
+				<log idref="$(n)" />
+			</plate>
+			<log idref="rates" />
+		</logger>
+
+		<logger id="treelog" fileName="test.trees">
+			<log idref="tree" />
+		</logger>
+	</run>
+</beast>
