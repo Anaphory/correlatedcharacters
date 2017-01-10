@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 
 <beast version='2.0'
-	namespace="beast.core:beast.core.parameter:beast.core.util:beast.math.distributions:beast.evolution.operators:parameterclone.splitandmerge:parameterclone.selector">
+	namespace="beast.core:beast.core.parameter:beast.core.util:beast.math.distributions:beast.evolution.operators">
 	<run chainLength="90000" id="mcmc" spec="MCMC" preBurnin="1">
 		<state id="state" storeEvery="100">
 			<stateNode spec="RealParameter" id="parameters" lower="0.0">
@@ -18,19 +18,19 @@
 		<distribution id="posterior" spec="CompoundDistribution">
 			<distribution id="likelihood" spec="CompoundDistribution"/>
 			<distribution id="prior" spec="Prior" x="@parameters">
-				<distr spec="parameterclone.helpers.RescaledDirichlet">
+				<distr spec="correlated.select.helpers.RescaledDirichlet">
 					<!-- Use a flat distribution -->
 					<parameter name="sizes" idref="sizes" />
 				</distr>
 			</distribution>
 		</distribution>
 
-		<operator id="Merger" spec="MergeOperator" weight="1">
+		<operator id="Merger" spec="correlated.select.splitandmerge.MergeOperator" weight="1">
 			<parameter name="sizes" idref="sizes" />
 			<parameter name="parameters" idref="parameters" />
 			<parameter name="groupings" idref="indices" />
 		</operator>
-		<operator id="Splitter" spec="SplitOperator" weight="1">
+		<operator id="Splitter" spec="correlated.select.splitandmerge.SplitOperator" weight="1">
 			<parameter name="sizes" idref="sizes" />
 			<parameter name="parameters" idref="parameters" />
 			<parameter name="groupings" idref="indices" />
@@ -38,7 +38,7 @@
 
 		<logger logEvery="10">
 			<log idref="indices" />
-			<log id="selector" spec="Selector">
+			<log id="selector" spec="correlated.select.Selector">
 				<parameter name="entry" spec="IntegerParameter" id="range"
 					lower="0" upper="2">
 					0 1 2

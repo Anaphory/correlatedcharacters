@@ -99,7 +99,7 @@
 					<Uniform id="Uniform.0" name="distr" upper="Infinity" />
 				</prior>
 				<prior id="Dirichlet" x="@parameters" name="distribution">
-					<distr spec="parameterclone.helpers.RescaledDirichlet" name="distr">
+					<distr spec="correlated.select.helpers.RescaledDirichlet" name="distr">
 						<!-- Use a flat, rescaled Dirichlet distribution -->
 						<parameter name="sizes" idref="sizes" />
 					</distr>
@@ -116,17 +116,17 @@
 						<parameter estimate="false" id="proportionInvariant.s:primate"
 							lower="0.0" name="proportionInvariant" upper="1.0" value="0.0" />
 						<substModel id="gtr.s:primate" spec="GTR"><!--eigenSystem="beast.evolution.substitutionmodel.RobustEigenSystem" -->
-							<parameter id="rateAC.s:primate" name="rateAC" spec="Selector"
+							<parameter id="rateAC.s:primate" name="rateAC" spec="correlated.select.Selector"
 								entry="0" parameters="@parameters" groupings="@indices" />
-							<parameter id="rateAG.s:primate" name="rateAG" spec="Selector"
+							<parameter id="rateAG.s:primate" name="rateAG" spec="correlated.select.Selector"
 								entry="1" parameters="@parameters" groupings="@indices" />
-							<parameter id="rateAT.s:primate" name="rateAT" spec="Selector"
+							<parameter id="rateAT.s:primate" name="rateAT" spec="correlated.select.Selector"
 								entry="2" parameters="@parameters" groupings="@indices" />
-							<parameter id="rateCG.s:primate" name="rateCG" spec="Selector"
+							<parameter id="rateCG.s:primate" name="rateCG" spec="correlated.select.Selector"
 								entry="3" parameters="@parameters" groupings="@indices" />
-							<parameter id="rateCT.s:primate" name="rateCT" spec="Selector"
+							<parameter id="rateCT.s:primate" name="rateCT" spec="correlated.select.Selector"
 								entry="4" parameters="@parameters" groupings="@indices" />
-							<parameter id="rateGT.s:primate" name="rateGT" spec="Selector"
+							<parameter id="rateGT.s:primate" name="rateGT" spec="correlated.select.Selector"
 								entry="5" parameters="@parameters" groupings="@indices" />
 							<frequencies frequencies="@freqParameter.s:primate"
 								id="estimatedFreqs.s:primate" spec="Frequencies" />
@@ -144,12 +144,12 @@
 			</distribution>
 		</distribution>
 
-		<operator id="Merger" spec="MergeOperator" weight="8">
+		<operator id="Merger" spec="correlated.select.splitandmerge.MergeOperator" weight="8">
 			<parameter name="sizes" idref="sizes" />
 			<parameter name="parameters" idref="parameters" />
 			<parameter name="groupings" idref="indices" />
 		</operator>
-		<operator id="Splitter" spec="SplitOperator" weight="8">
+		<operator id="Splitter" spec="correlated.select.splitandmerge.SplitOperator" weight="8">
 			<parameter name="sizes" idref="sizes" />
 			<parameter name="parameters" idref="parameters" />
 			<parameter name="groupings" idref="indices" />
@@ -202,7 +202,7 @@
 			<log idref="YuleModel.t:primate" />
 			<parameter idref="birthRate.t:primate" name="log" />
 			<parameter name="log" idref="indices" />
-			<log id="rates" spec="Selector">
+			<log id="rates" spec="correlated.select.Selector">
 				<parameter name="entry" spec="IntegerParameter" id="range"
 					lower="0" upper="5">
 					0 1 2 3 4 5

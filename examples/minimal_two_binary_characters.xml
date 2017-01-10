@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <beast version='2.0'
-	namespace="beast.core:beast.evolution.alignment:correlatedcharacters.polycharacter:beast.evolution.operators:beast.evolution.tree:beast.evolution.datatype:beast.evolution.tree.coalescent:beast.evolution.likelihood:beast.core.util:beast.math.distributions:beast.evolution.sitemodel:beast.evolution.substitutionmodel">
+	namespace="beast.core:beast.evolution.alignment:beast.evolution.operators:beast.evolution.tree:beast.evolution.datatype:beast.evolution.tree.coalescent:beast.evolution.likelihood:beast.core.util:beast.math.distributions:beast.evolution.sitemodel:beast.evolution.substitutionmodel">
 
 	<map name="prior">beast.math.distributions.Prior</map>
 	<map name="LogNormal">beast.math.distributions.LogNormalDistributionModel</map>
 	<map name="Exponential">beast.math.distributions.Exponential</map>
 
-	<data id="characters" spec="CompoundAlignment">
+	<data id="characters" spec="correlated.polycharacter.CompoundAlignment">
 		<alignment id="characters1" dataType="user defined" spec="Alignment">
 			<userDataType spec="beast.evolution.datatype.Binary"/>
 			<sequence id="ch_1a" taxon="t1" value="00" />
@@ -47,7 +47,7 @@
 				<distribution id="treelk" spec="TreeLikelihood" tree="@tree"
 					data="@characters">
 					<siteModel id="sitemodel" spec="SiteModel">
-						<substModel id="subst" spec="CorrelatedSubstitutionModel"
+						<substModel id="subst" spec="correlated.polycharacter.CorrelatedSubstitutionModel"
 							rates="@rates" shape="2 2">
 							<frequencies name="frequencies" id="frequencies"
 								spec="Frequencies" estimate="false" frequencies="0.25 0.25 0.25 0.25" />

@@ -1,4 +1,4 @@
-package correlated.select.selector;
+package correlated.select;
 
 import beast.core.Citation;
 import beast.core.Description;

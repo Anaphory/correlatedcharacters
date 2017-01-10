@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package correlated.select.selector;
+package correlated.select;
 
 import java.io.PrintStream;
 
