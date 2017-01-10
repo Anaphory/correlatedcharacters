@@ -31,7 +31,7 @@
 			<sequence id="ch_2a" taxon="t2" value="110" />
 			<sequence id="ch_3a" taxon="t3" value="121" />
 			<sequence id="ch_4a" taxon="t4" value="122" />
-					</alignment>
+		</alignment>
 		<!-- Because of how data types and ambiguities work internally, the CompoundAlignment 
 			cannot guess the shape of the data type in this example. We therefore specify 
 			it as a CompoundDataType. -->
