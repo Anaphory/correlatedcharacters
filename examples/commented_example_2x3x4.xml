@@ -27,10 +27,11 @@
 					spec="beast.evolution.datatype.UserDataType" characterName="A Quartary Character"
 					codeMap="0=0, 1=1, 2=2, 3=3, ?=0 1" states="4" value="0, 1, 2, 3" />
 			</userDataType>
-			<sequence id="ch_1a" taxon="t1" value="00" />
-			<sequence id="ch_2a" taxon="t2" value="11" />
-			<sequence id="ch_3a" taxon="t3" value="12" />
-		</alignment>
+			<sequence id="ch_1a" taxon="t1" value="003" />
+			<sequence id="ch_2a" taxon="t2" value="110" />
+			<sequence id="ch_3a" taxon="t3" value="121" />
+			<sequence id="ch_4a" taxon="t4" value="122" />
+					</alignment>
 		<!-- Because of how data types and ambiguities work internally, the CompoundAlignment 
 			cannot guess the shape of the data type in this example. We therefore specify 
 			it as a CompoundDataType. -->
