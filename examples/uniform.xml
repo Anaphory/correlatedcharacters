@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+
+<beast version='2.0'
+	namespace="beast.core:beast.core.parameter:beast.core.util:beast.math.distributions:beast.evolution.operators:parameterclone.splitandmerge:parameterclone.selector">
+	<run chainLength="90000" id="mcmc" spec="MCMC" preBurnin="1">
+		<state id="state" storeEvery="100">
+			<stateNode spec="RealParameter" id="parameters" lower="0.0">
+				1 1 1 1 1 1
+			</stateNode>
+			<stateNode spec="IntegerParameter" id="indices" lower="0" upper="2">
+				0 2 1 0 0 0
+			</stateNode>
+			<stateNode spec="IntegerParameter" id="sizes">
+				4 1 1 0 0 0
+			</stateNode>
+		</state>
+
+		<distribution id="posterior" spec="CompoundDistribution">
+			<distribution id="likelihood" spec="CompoundDistribution"/>
+			<distribution id="prior" spec="Prior" x="@parameters">
+				<distr spec="parameterclone.helpers.RescaledDirichlet">
+					<!-- Use a flat distribution -->
+					<parameter name="sizes" idref="sizes" />
+				</distr>
+			</distribution>
+		</distribution>
+
+		<operator id="Merger" spec="MergeOperator" weight="1">
+			<parameter name="sizes" idref="sizes" />
+			<parameter name="parameters" idref="parameters" />
+			<parameter name="groupings" idref="indices" />
+		</operator>
+		<operator id="Splitter" spec="SplitOperator" weight="1">
+			<parameter name="sizes" idref="sizes" />
+			<parameter name="parameters" idref="parameters" />
+			<parameter name="groupings" idref="indices" />
+		</operator>
+
+		<logger logEvery="10">
+			<log idref="indices" />
+			<log id="selector" spec="Selector">
+				<parameter name="entry" spec="IntegerParameter" id="range"
+					lower="0" upper="2">
+					0 1 2
+				</parameter>
+				<parameter name="parameters" idref="parameters" />
+				<parameter name="groupings" idref="indices" />
+			</log>
+			<log idref="prior" />
+			<log idref="parameters" />
+			<log idref="sizes" />
+		</logger>
+
+		<logger logEvery="1" fileName="indices.log">
+			<log idref="indices" />
+			<log idref="selector" />
+		</logger>
+	</run>
+</beast>
