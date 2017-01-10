@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package parameterclone.selector;
+package correlated.select.selector;
 
 import java.io.PrintStream;
 

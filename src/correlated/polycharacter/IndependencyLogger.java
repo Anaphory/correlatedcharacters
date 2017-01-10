@@ -1,4 +1,4 @@
-package correlatedcharacters.polycharacter;
+package correlated.polycharacter;
 
 import java.io.PrintStream;
 import java.util.List;

@@ -1,7 +1,7 @@
 /**
  * 
  */
-package correlatedcharacters.polycharacter;
+package correlated.polycharacter;
 
 import java.util.ArrayList;
 import java.util.Collection;

@@ -1,4 +1,4 @@
-package parameterclone.helpers;
+package correlated.select.helpers;
 
 import org.apache.commons.math.distribution.Distribution;
 

@@ -5,7 +5,7 @@ import beast.core.parameter.IntegerParameter;
 import beast.evolution.datatype.Binary;
 import beast.evolution.datatype.DataType;
 import beast.evolution.datatype.Nucleotide;
-import correlatedcharacters.polycharacter.CompoundDataType;
+import correlated.polycharacter.CompoundDataType;
 
 public class CompoundDataTypeTest extends TestCase {
 

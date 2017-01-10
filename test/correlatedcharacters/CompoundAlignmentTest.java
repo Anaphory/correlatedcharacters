@@ -9,8 +9,8 @@ import beast.evolution.alignment.Alignment;
 import beast.evolution.alignment.Sequence;
 import beast.evolution.datatype.DataType;
 import beast.evolution.datatype.StandardData;
-import correlatedcharacters.polycharacter.CompoundAlignment;
-import correlatedcharacters.polycharacter.CompoundDataType;
+import correlated.polycharacter.CompoundAlignment;
+import correlated.polycharacter.CompoundDataType;
 
 public class CompoundAlignmentTest extends TestCase {
 	static public Alignment alignment0() {

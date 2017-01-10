@@ -1,4 +1,4 @@
-package correlatedcharacters.polycharacter;
+package correlated.polycharacter;
 
 import java.util.List;
 import java.util.Random;

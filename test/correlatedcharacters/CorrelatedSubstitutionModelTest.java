@@ -27,14 +27,14 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import correlatedcharacters.polycharacter.CompoundDataType;
-import correlatedcharacters.polycharacter.CorrelatedSubstitutionModel;
 import junit.framework.TestCase;
 import beast.core.Description;
 import beast.core.parameter.IntegerParameter;
 import beast.core.parameter.RealParameter;
 import beast.evolution.datatype.StandardData;
 import beast.evolution.substitutionmodel.Frequencies;
+import correlated.polycharacter.CompoundDataType;
+import correlated.polycharacter.CorrelatedSubstitutionModel;
 
 /**
  * Test CorrelatedSubstitution matrix construction

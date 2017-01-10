@@ -1,9 +1,6 @@
 package parameterclone;
 
 import junit.framework.TestCase;
-import parameterclone.helpers.RescaledDirichlet;
-import parameterclone.splitandmerge.MergeOperator;
-import parameterclone.splitandmerge.SplitOperator;
 import beast.core.Distribution;
 import beast.core.MCMC;
 import beast.core.Operator;
@@ -12,6 +9,9 @@ import beast.core.StateNode;
 import beast.core.parameter.IntegerParameter;
 import beast.core.parameter.RealParameter;
 import beast.math.distributions.Prior;
+import correlated.select.helpers.RescaledDirichlet;
+import correlated.select.splitandmerge.MergeOperator;
+import correlated.select.splitandmerge.SplitOperator;
 
 public class UniformTest extends TestCase {
 	int length = 5;
