@@ -67,11 +67,11 @@ public class CompoundAlignment extends Alignment {
 			// Guess the data type from the data
 			Integer[] guessedSizes = guessSizes(alignment);
 			List<DataType> components = new ArrayList<DataType>(guessedSizes.length);
-			if (alignment.getDataType() instanceof StandardData) {
+			if (alignment.getDataType() instanceof StandardData && true) {
 				List<UserDataType> dtypes = ((StandardData) alignment.getDataType()).charStateLabelsInput.get();
 				for (int i = 0; i < guessedSizes.length; ++i) {
 					DataType dtype = dtypes.get(i);
-					if (dtype.getStateCount()<guessedSizes[i]) {
+					if (dtype.getStateCount() < guessedSizes[i]) {
 						throw new IllegalArgumentException(
 								"Data types of inner alignment are garbled. (If your inner alignment contains ambiguities, you need to supply an explicit data type to the CompoundAlignment.)");
 					}

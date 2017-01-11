@@ -1,4 +1,4 @@
-package parameterclone;
+package correlated;
 
 import junit.framework.TestCase;
 import beast.core.Distribution;

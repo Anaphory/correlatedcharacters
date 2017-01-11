@@ -1,4 +1,4 @@
-package correlatedcharacters;
+package correlated;
 
 import junit.framework.TestCase;
 import beast.core.parameter.IntegerParameter;

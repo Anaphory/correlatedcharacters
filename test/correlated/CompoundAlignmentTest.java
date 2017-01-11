@@ -1,4 +1,4 @@
-package correlatedcharacters;
+package correlated;
 
 import junit.framework.TestCase;
 
@@ -28,7 +28,7 @@ public class CompoundAlignmentTest extends TestCase {
 		Alignment data = new Alignment();
 		try {
 			data.initByName("sequence", zer, "sequence", one, "sequence", two, "sequence", thr, "sequence", fou,
-					"dataType", "standard", "id", "Alignment0");
+					"dataType", "binary", "id", "Alignment0");
 		} catch (Exception e) {
 			throw (RuntimeException) e;
 		}
@@ -47,7 +47,7 @@ public class CompoundAlignmentTest extends TestCase {
 		return new CompoundDataType(types, sizes, sizes);
 	}
 
-	public void testCompoundAlignment() throws Exception {
+	public void testCompoundAlignment() {
 		// Test whether basic functionality (data type size, manual recovery of
 		// component-wise values) is guaranteed.
 		Alignment a0 = alignment0();
@@ -65,7 +65,7 @@ public class CompoundAlignmentTest extends TestCase {
 				compound.getStateCounts().get(0), expectedStateCount);
 	}
 
-	public void testCompoundAlignmentWithoutDataType() throws Exception {
+	public void testCompoundAlignmentWithoutDataType() {
 		// Test whether basic functionality (data type size, manual recovery of
 		// component-wise values) is guaranteed.
 		Alignment a0 = alignment0();
@@ -83,7 +83,7 @@ public class CompoundAlignmentTest extends TestCase {
 				expectedStateCount, compound.getStateCounts().get(0));
 	}
 
-	public void testRecoverCompoundAlignment() throws Exception {
+	public void testRecoverCompoundAlignment() {
 		// Test whether CompoundDataType.compoundState2componentState can
 		// recover the patterns from individual alignments.
 		CompoundAlignment compound = null;
