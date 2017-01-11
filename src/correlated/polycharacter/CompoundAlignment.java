@@ -13,6 +13,8 @@ import beast.core.parameter.IntegerParameter;
 import beast.core.util.Log;
 import beast.evolution.alignment.Alignment;
 import beast.evolution.datatype.DataType;
+import beast.evolution.datatype.StandardData;
+import beast.evolution.datatype.UserDataType;
 
 /**
  * @author gereon
@@ -64,9 +66,21 @@ public class CompoundAlignment extends Alignment {
 		} else if (dataTypeInput.get() == NUCLEOTIDE) {
 			// Guess the data type from the data
 			Integer[] guessedSizes = guessSizes(alignment);
-			List<DataType> components = new ArrayList<DataType>(); 
-			for (int i=0; i<guessedSizes.length; ++i) {
-				components.add(alignment.getDataType());
+			List<DataType> components = new ArrayList<DataType>(guessedSizes.length);
+			if (alignment.getDataType() instanceof StandardData) {
+				List<UserDataType> dtypes = ((StandardData) alignment.getDataType()).charStateLabelsInput.get();
+				for (int i = 0; i < guessedSizes.length; ++i) {
+					DataType dtype = dtypes.get(i);
+					if (dtype.getStateCount()<guessedSizes[i]) {
+						throw new IllegalArgumentException(
+								"Data types of inner alignment are garbled. (If your inner alignment contains ambiguities, you need to supply an explicit data type to the CompoundAlignment.)");
+					}
+					components.add(dtype);
+				}
+			} else {
+				for (int i = 0; i < guessedSizes.length; ++i) {
+					components.add(alignment.getDataType());
+				}
 			}
 			cdt.initByName("components", components, "componentSizesIncludingAmbiguities",
 					new IntegerParameter(guessedSizes));

@@ -13,13 +13,15 @@
 		and all other components of the correlated evolution model are compatible. -->
 	<data id="characters" spec="correlated.polycharacter.CompoundAlignment">
 		<!-- CompoundAlignment takes as its main input another (short) alignment, 
-			the columns of which it then aggregates. For a sub-alignment with non-equal 
-			data types, such as in the 2×3×4 example we construct, this is more complex. -->
+			the columns of which it then aggregates. In good-natured cases (no ambiguities, 
+			StandardData type specified) the CompoundAlignment can infer the shape from 
+			the input alignment. -->
 		<alignment id="characters1" dataType="user defined" spec="Alignment">
 			<userDataType spec="beast.evolution.datatype.StandardData"
 				nrOfStates="6">
 				<charstatelabels id="Column1"
-					spec="beast.evolution.datatype.Binary" />
+					spec="beast.evolution.datatype.UserDataType" characterName="A Binary Character"
+					codeMap="0=0, 1=1, ?=0 1" states="2" value="0, 1" />
 				<charstatelabels id="Column2"
 					spec="beast.evolution.datatype.UserDataType" characterName="A Ternary Character"
 					codeMap="0=0, 1=1, 2=2, ?=0 1 2" states="3" value="0, 1, 2" />
@@ -32,44 +34,43 @@
 			<sequence id="ch_3a" taxon="t3" value="121" />
 			<sequence id="ch_4a" taxon="t4" value="122" />
 		</alignment>
-		<!-- Because of how data types and ambiguities work internally, the CompoundAlignment 
-			cannot guess the shape of the data type in this example. We therefore specify 
-			it as a CompoundDataType. -->
-		<userDataType spec="correlated.polycharacter.CompoundDataType">
-			<components idref="Column1" />
-			<components idref="Column2" />
-			<components idref="Column3" />
-		</userDataType>
 	</data>
 
+	<!-- The whole markov chain has 2×3×4=24 states. The substitution model 
+		will need their equilibrium frequencies. -->
+	<frequencies name="frequencies" id="frequencies"
+		spec="beast.evolution.substitutionmodel.Frequencies" estimate="false">
+		<parameter name="frequencies"> 0.08 0.04 0.04 0.04 0.04 0.04 0.04 0.04
+			0.04 0.04 0.04 0.04 0.04 0.04 0.04 0.04 0.04 0.04 0.04 0.04 0.04 0.04
+			0.04 0.04
+		</parameter>
+	</frequencies>
+	<!-- Each component of each state can instantly jump to every other value 
+		of that component, along one of (2-1)+(3-1)+(4-1)=6 edges. We therefore have 
+		at most 6*24=144 different rates. -->
+	<parameter id="rates" name="stateNode">1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+		1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+		1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+		1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+		1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+	</parameter>
+
+	<!-- With these moving parts specified, we can now assemble it into a correlated 
+		substitution model. -->
+	<substModel id="subst"
+		spec="correlated.polycharacter.CorrelatedSubstitutionModel" rates="@rates"
+		alignment="@characters" frequencies="@frequencies" />
+
+	<!-- What follows is a standard MCMC to infer the substitution rate parameters 
+		on a given tree (the one we used to construct the alignment). In addition 
+		to the usual outputs, we also log the dependencies or independencies between 
+		the three components. -->
 	<run chainLength="200" id="mcmc" spec="MCMC" preBurnin="0">
 		<state id="state" storeEvery="100">
-			<tree id="tree" name="stateNode" />
-
-			<!-- We have 2×3×4=24 states. Each component of each state can switch, 
-				along one of (2-1)+(3-1)+(4-1)=6 edges. We therefore have at most 6*24=144 
-				different rates. -->
-			<parameter id="rates" name="stateNode">
-				1 1 1 1 1 1 1 1 1 1 1 1
-				1 1 1 1 1
-				1 1 1 1 1 1 1
-				1 1 1 1 1 1 1 1 1 1 1 1
-				1 1 1 1 1 1 1 1 1 1 1 1
-				1 1 1 1 1
-				1 1 1 1 1 1 1
-				1 1 1 1 1 1 1 1 1 1 1 1
-				1 1 1 1 1 1 1 1 1 1 1 1
-				1 1 1 1 1
-				1 1 1 1 1 1 1
-				1 1 1 1 1 1 1 1 1 1 1 1
-				1 1 1 1 1 1 1 1 1 1 1 1
-				1 1 1 1 1
-				1 1 1 1 1 1 1
-				1 1 1 1 1 1 1 1 1 1 1 1
-			</parameter>
+			<stateNode idref="rates" />
 		</state>
 
-		<init id="treeinit" initial="@tree" spec="beast.util.TreeParser"
+		<init id="tree" spec="beast.util.TreeParser"
 			IsLabelledNewick="true" newick="((t3:1,t4:1):1,(t1:1,t2:1):1);" taxa="@characters">
 		</init>
 
@@ -87,24 +88,10 @@
 			</distribution>
 			<distribution id="likelihood" spec="CompoundDistribution">
 				<distribution id="treelk"
-					spec="beast.evolution.likelihood.TreeLikelihood" tree="@tree" data="@characters">
-					<siteModel id="sitemodel" spec="beast.evolution.sitemodel.SiteModel">
-						<!-- The correlated substitution model also needs input about the shape 
-							of the alignment. -->
-						<substModel id="subst"
-							spec="correlated.polycharacter.CorrelatedSubstitutionModel"
-							rates="@rates" shape="2 3 4">
-							<frequencies name="frequencies" id="frequencies"
-								spec="beast.evolution.substitutionmodel.Frequencies" estimate="false">
-								<parameter name="frequencies">
-									0.08 0.04 0.04 0.04 0.04 0.04 0.04
-									0.04 0.04 0.04 0.04 0.04 0.04
-									0.04 0.04 0.04 0.04 0.04 0.04 0.04
-									0.04 0.04 0.04 0.04
-								</parameter>
-							</frequencies>
-						</substModel>
-					</siteModel>
+					spec="beast.evolution.likelihood.TreeLikelihood" tree="@tree"
+					data="@characters">
+					<siteModel id="sitemodel" spec="beast.evolution.sitemodel.SiteModel"
+						substModel="@subst" />
 				</distribution>
 			</distribution>
 		</distribution>
@@ -114,10 +101,6 @@
 				<log idref="$(n)" />
 			</plate>
 			<log idref="rates" />
-		</logger>
-
-		<logger id="treelog" fileName="test.trees">
-			<log idref="tree" />
 		</logger>
 	</run>
 </beast>
