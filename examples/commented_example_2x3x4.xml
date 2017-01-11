@@ -70,7 +70,7 @@
 		</state>
 
 		<init id="treeinit" initial="@tree" spec="beast.util.TreeParser"
-			IsLabelledNewick="true" newick="(t3:2,(t1:1,t2:1):1);" taxa="@characters">
+			IsLabelledNewick="true" newick="((t3:1,t4:1):1,(t1:1,t2:1):1);" taxa="@characters">
 		</init>
 
 		<!-- This operator does nothing, because it scales "1"s by "1". -->
