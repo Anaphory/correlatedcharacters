@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<beast version='2.0'
+<beast
+	version='2.0'
 	namespace="beast.core:beast.core.util:beast.evolution.alignment">
 	<map name="prior">beast.math.distributions.Prior</map>
+	<map name="integers">beast.core.parameter.IntegerParameter</map>
 
 	<!-- This example file shows how to set up a beast analysis of correlated 
 		character evolution under a reversible Markov chain assumption. It shows 
@@ -11,96 +13,211 @@
 		with indices, it is recommended to use the CompoundAlignment structure – 
 		the package's tests enforce that the indexing structure of CompoundAligment 
 		and all other components of the correlated evolution model are compatible. -->
-	<data id="characters" spec="correlated.polycharacter.CompoundAlignment">
+	<obj
+		id="characters"
+		spec="correlated.polycharacter.CompoundAlignment">
 		<!-- CompoundAlignment takes as its main input another (short) alignment, 
 			the columns of which it then aggregates. In good-natured cases (no ambiguities, 
 			StandardData type specified) the CompoundAlignment can infer the shape from 
 			the input alignment. -->
-		<alignment id="characters1" dataType="user defined" spec="Alignment">
-			<userDataType spec="beast.evolution.datatype.StandardData"
+		<alignment
+			id="characters1"
+			dataType="user defined"
+			spec="Alignment">
+			<userDataType
+				spec="beast.evolution.datatype.StandardData"
 				nrOfStates="6">
-				<charstatelabels id="Column1"
-					spec="beast.evolution.datatype.UserDataType" characterName="A Binary Character"
-					codeMap="0=0, 1=1, ?=0 1" states="2" value="0, 1" />
-				<charstatelabels id="Column2"
-					spec="beast.evolution.datatype.UserDataType" characterName="A Ternary Character"
-					codeMap="0=0, 1=1, 2=2, ?=0 1 2" states="3" value="0, 1, 2" />
-				<charstatelabels id="Column3"
-					spec="beast.evolution.datatype.UserDataType" characterName="A Quartary Character"
-					codeMap="0=0, 1=1, 2=2, 3=3, ?=0 1" states="4" value="0, 1, 2, 3" />
+				<charstatelabels
+					id="Column1"
+					spec="beast.evolution.datatype.UserDataType"
+					characterName="A Binary Character"
+					codeMap="0=0, 1=1, ?=0 1"
+					states="2" />
+				<charstatelabels
+					id="Column2"
+					spec="beast.evolution.datatype.UserDataType"
+					characterName="A Ternary Character"
+					codeMap="0=0, 1=1, 2=2, ?=0 1 2"
+					states="3" />
+				<charstatelabels
+					id="Column3"
+					spec="beast.evolution.datatype.UserDataType"
+					characterName="A Quartary Character"
+					codeMap="0=0, 1=1, 2=2, 3=3, ?=0 1"
+					states="4" />
 			</userDataType>
-			<sequence id="ch_1a" taxon="t1" value="003" />
-			<sequence id="ch_2a" taxon="t2" value="110" />
-			<sequence id="ch_3a" taxon="t3" value="121" />
-			<sequence id="ch_4a" taxon="t4" value="122" />
+			<sequence
+				id="ch_1a"
+				taxon="t1"
+				value="003" />
+			<sequence
+				id="ch_2a"
+				taxon="t2"
+				value="110" />
+			<sequence
+				id="ch_3a"
+				taxon="t3"
+				value="121" />
+			<sequence
+				id="ch_4a"
+				taxon="t4"
+				value="122" />
 		</alignment>
-	</data>
+	</obj>
 
 	<!-- The whole markov chain has 2×3×4=24 states. The substitution model 
 		will need their equilibrium frequencies. -->
-	<frequencies name="frequencies" id="frequencies"
-		spec="beast.evolution.substitutionmodel.Frequencies" estimate="false">
+	<obj
+		name="frequencies"
+		id="frequencies"
+		spec="beast.evolution.substitutionmodel.Frequencies"
+		estimate="false">
 		<parameter name="frequencies"> 0.08 0.04 0.04 0.04 0.04 0.04 0.04 0.04
 			0.04 0.04 0.04 0.04 0.04 0.04 0.04 0.04 0.04 0.04 0.04 0.04 0.04 0.04
 			0.04 0.04
 		</parameter>
-	</frequencies>
+	</obj>
+
 	<!-- Each component of each state can instantly jump to every other value 
 		of that component, along one of (2-1)+(3-1)+(4-1)=6 edges. We therefore have 
 		at most 6*24=144 different rates. -->
-	<parameter id="rates" name="stateNode">1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
-		1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
-		1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
-		1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
-		1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+	<parameter id="rawRates" lower="0" upper="1">
+		1
+		-1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+		-1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+		-1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+		-1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+		-1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+		-1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+		-1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 	</parameter>
+	<!-- If all these rates are inferred independently, it is infinitely unlikely 
+		to see independence or partial dependence between the features. To use the 
+		approach suggested by Pagel and Meade, considering partitions of the rates, 
+		construct the partitioning helpers: A selector propagating raw values according 
+		to a partition, and the operators changing those values and partition. -->
+	<integers id="groupings"> 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+		0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+		0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+		0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+		0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+	</integers>
+	<integers id="sizes"> 144 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+		0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+		0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+		0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+		0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+	</integers>
+	<obj
+		id="rates"
+		spec="correlated.select.Selector"
+		parameters="@rawRates"
+		groupings="@groupings"
+		minusOne="0" />
+	<obj
+		id="splitter"
+		spec="correlated.select.splitandmerge.SplitOperator"
+		parameters="@rawRates"
+		groupings="@groupings"
+		sizes="@sizes"
+		weight="3" />
+	<obj
+		id="merger"
+		spec="correlated.select.splitandmerge.MergeOperator"
+		parameters="@rawRates"
+		groupings="@groupings"
+		sizes="@sizes"
+		weight="3" />
+	<obj
+		id="heaper"
+		spec="beast.evolution.operators.DeltaExchangeOperator"
+		parameter="@rawRates"
+		delta="0.1"
+		weightvector="@sizes"
+		weight="3" />
+
 
 	<!-- With these moving parts specified, we can now assemble it into a correlated 
 		substitution model. -->
-	<substModel id="subst"
-		spec="correlated.polycharacter.CorrelatedSubstitutionModel" rates="@rates"
-		alignment="@characters" frequencies="@frequencies" />
+	<obj
+		id="subst"
+		spec="correlated.polycharacter.CorrelatedSubstitutionModel"
+		rates="@rates"
+		alignment="@characters"
+		frequencies="@frequencies" />
 
 	<!-- What follows is a standard MCMC to infer the substitution rate parameters 
 		on a given tree (the one we used to construct the alignment). In addition 
 		to the usual outputs, we also log the dependencies or independencies between 
 		the three components. -->
-	<run chainLength="200" id="mcmc" spec="MCMC" preBurnin="0">
-		<state id="state" storeEvery="100">
-			<stateNode idref="rates" />
+	<run
+		chainLength="2000"
+		id="mcmc"
+		spec="MCMC"
+		preBurnin="0">
+		<state
+			id="state"
+			storeEvery="100">
+			<stateNode idref="rawRates" />
+			<stateNode idref="groupings" />
+			<stateNode idref="sizes" />
 		</state>
 
-		<init id="tree" spec="beast.util.TreeParser"
-			IsLabelledNewick="true" newick="((t3:1,t4:1):1,(t1:1,t2:1):1);" taxa="@characters">
+		<init
+			id="tree"
+			spec="beast.util.TreeParser"
+			IsLabelledNewick="true"
+			newick="((t3:1,t4:1):1,(t1:1,t2:1):1);"
+			taxa="@characters">
 		</init>
 
-		<!-- This operator does nothing, because it scales "1"s by "1". -->
-		<operator id="treeModel000(narrow)" spec="beast.evolution.operators.ScaleOperator"
-			parameter="@rates" weight="1" />
+		<plate
+			var="op"
+			range="splitter,merger,heaper">
+			<operator idref="$(op)" />
+		</plate>
 
-		<distribution id="posterior" spec="CompoundDistribution">
-			<distribution id="prior" spec="CompoundDistribution">
-				<prior id="ratesPrior" name="distribution" x="@rates">
-					<distr id="lognormalrate" spec="beast.math.distributions.Exponential">
-						<parameter estimate="false" id="r0" name="mean" value="1" />
-					</distr>
+		<distribution
+			id="posterior"
+			spec="CompoundDistribution">
+			<distribution
+				id="prior"
+				spec="CompoundDistribution">
+				<prior
+					id="ratesPrior"
+					name="distribution"
+					x="@rates">
+					<distr
+						id="rescaledDirichlet"
+						spec="correlated.select.helpers.RescaledDirichlet"
+						sizes="@sizes" />
 				</prior>
 			</distribution>
-			<distribution id="likelihood" spec="CompoundDistribution">
-				<distribution id="treelk"
-					spec="beast.evolution.likelihood.TreeLikelihood" tree="@tree"
+			<distribution
+				id="likelihood"
+				spec="CompoundDistribution">
+				<distribution
+					id="treelk"
+					spec="beast.evolution.likelihood.TreeLikelihood"
+					tree="@tree"
 					data="@characters">
-					<siteModel id="sitemodel" spec="beast.evolution.sitemodel.SiteModel"
+					<siteModel
+						id="sitemodel"
+						spec="beast.evolution.sitemodel.SiteModel"
 						substModel="@subst" />
 				</distribution>
 			</distribution>
 		</distribution>
 
-		<logger id="screenlog" logEvery="1">
-			<plate var="n" range="posterior,prior,ratesPrior,likelihood,treelk">
+		<logger
+			id="screenlog"
+			logEvery="5">
+			<plate
+				var="n"
+				range="posterior,prior,likelihood,rates">
 				<log idref="$(n)" />
 			</plate>
-			<log idref="rates" />
+			<log id="dep" spec="correlated.polycharacter.IndependencyLogger" model="@subst"/>
 		</logger>
 	</run>
 </beast>
