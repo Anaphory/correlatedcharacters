@@ -81,15 +81,24 @@
 	<!-- Each component of each state can instantly jump to every other value 
 		of that component, along one of (2-1)+(3-1)+(4-1)=6 edges. We therefore have 
 		at most 6*24=144 different rates. -->
-	<parameter id="rawRates" lower="0" upper="1">
+	<parameter
+		id="rawRates"
+		lower="0"
+		upper="1">
 		1
 		-1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
-		-1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
-		-1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
-		-1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
-		-1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
-		-1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+		-1 -1 -1 -1 -1 -1
+		-1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+		-1 -1 -1 -1 -1 -1 -1
+		-1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+		-1 -1 -1 -1 -1 -1 -1 -1
+		-1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+		-1 -1 -1 -1 -1 -1 -1 -1 -1
+		-1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+		-1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 		-1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+		-1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+		-1 -1
 	</parameter>
 	<!-- If all these rates are inferred independently, it is infinitely unlikely 
 		to see independence or partial dependence between the features. To use the 
@@ -155,6 +164,20 @@
 		id="mcmc"
 		spec="MCMC"
 		preBurnin="0">
+		<logger
+			id="screenlog"
+			logEvery="5">
+			<log
+				id="dep"
+				spec="correlated.polycharacter.IndependencyLogger"
+				model="@subst" />
+			<plate
+				var="n"
+				range="posterior,prior,likelihood,rates">
+				<log idref="$(n)" />
+			</plate>
+		</logger>
+
 		<state
 			id="state"
 			storeEvery="100">
@@ -209,15 +232,5 @@
 			</distribution>
 		</distribution>
 
-		<logger
-			id="screenlog"
-			logEvery="5">
-			<plate
-				var="n"
-				range="posterior,prior,likelihood,rates">
-				<log idref="$(n)" />
-			</plate>
-			<log id="dep" spec="correlated.polycharacter.IndependencyLogger" model="@subst"/>
-		</logger>
 	</run>
 </beast>
